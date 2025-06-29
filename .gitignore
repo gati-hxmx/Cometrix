@@ -1,2 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Virtual environment
 .venv/
-backend/.env
+env/
+venv/
+
+# VSCode
+.vscode/
+
+# dotenv
+.env
