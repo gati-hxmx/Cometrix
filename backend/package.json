@@ -2,11 +2,10 @@
   "devDependencies": {
     "concurrently": "^9.2.0"
   },
-"scripts": {
-  "dev": "concurrently \"npm run dev:fastapi\" \"npm run dev:flask\"",
-  "dev:fastapi": "uvicorn api_app:app --reload --port 8000",
-  "dev:flask": "FLASK_APP=auth_app flask run --port=5000"
-}
-
-
+  "scripts": {
+    "dev": "concurrently \"npm run dev:fastapi\" \"npm run dev:flask\" \"npm run dev:stripe\"",
+    "dev:fastapi": "uvicorn api_app:app --reload --port 8000",
+    "dev:flask": "FLASK_APP=auth_app flask run --port=5000",
+    "dev:stripe": "FLASK_APP=stripe_app flask run --port=5001"
+  }
 }
