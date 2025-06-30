@@ -5,6 +5,7 @@ import VideoUrlInput from '@/components/analyze/VideoUrlInput.vue';
 import { useChatStore } from '@/stores/chat'
 import YoutubePlayer from '@/components/analyze/YoutubePlayer.vue'
 import ChatList from '@/components/analyze/ChatList.vue'
+import ChatVolumeChart from '@/components/analyze/ChatVolumeChart.vue'
 
 const chat = useChatStore()
 
@@ -31,6 +32,7 @@ const handleVideoIdSubmit = (videoId) => {
     <ChatList />
   </div>
 </div>
+<ChatVolumeChart />
 
     <div v-if="videoId" class="mt-6">
       <p>取得した動画ID: <strong>{{ videoId }}</strong></p>

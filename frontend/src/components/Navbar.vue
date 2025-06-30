@@ -22,17 +22,21 @@
             Login
           </RouterLink>
 
-          <template v-if="isLoggedIn">
-            <span class="text-sm font-medium text-gray-600">
-              {{ name }}
-            </span>
-            <button
-              @click="logout"
-              class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-            >
-              ログアウト
-            </button>
-          </template>
+        <template v-if="isLoggedIn">
+          <RouterLink
+            to="/mypage"
+            class="text-sm font-medium text-blue-600 hover:underline"
+          >
+            {{ name }}
+          </RouterLink>
+          <button
+            @click="logout"
+            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+          >
+            ログアウト
+          </button>
+        </template>
+
         </div>
       </div>
     </div>
