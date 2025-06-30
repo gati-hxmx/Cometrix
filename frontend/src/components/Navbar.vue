@@ -13,6 +13,7 @@
         <div class="flex items-center space-x-6 text-gray-700">
           <RouterLink to="/" class="hover:text-blue-600">Home</RouterLink>
           <RouterLink to="/about" class="hover:text-blue-600">About</RouterLink>
+          <RouterLink to="/analyze" class="hover:text-blue-600">分析画面</RouterLink>
           <RouterLink
             v-if="!isLoggedIn"
             to="/login"
