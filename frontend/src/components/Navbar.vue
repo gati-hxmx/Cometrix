@@ -1,7 +1,9 @@
 <!-- frontend/src/components/Navbar.vue -->
 <template>
   <nav class="bg-gray-800 text-white p-4 flex justify-between items-center">
-    <div class="text-xl font-bold">Cometrix</div>
+    <RouterLink to="/" class="text-xl font-bold hover:text-gray-300">
+  Cometrix
+</RouterLink>
     <div class="space-x-4">
       <RouterLink to="/" class="hover:underline">Home</RouterLink>
       <RouterLink to="/about" class="hover:underline">About</RouterLink>
