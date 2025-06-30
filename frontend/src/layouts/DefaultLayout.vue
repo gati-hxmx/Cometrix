@@ -5,7 +5,13 @@
     <div class="max-w-5xl mx-auto border border-gray-300 bg-white rounded-lg p-6 shadow">
       <slot />
     </div>
+
+
   </div>
+        <!-- フッター -->
+    <footer class="bg-white border-t text-center text-sm text-gray-500 py-4">
+      © Cometrix 2025. All rights reserved.
+    </footer>
 </template>
 
 <script setup>
