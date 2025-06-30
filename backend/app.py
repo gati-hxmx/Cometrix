@@ -75,6 +75,11 @@ def get_user():
         'email': current_user.email
     })
 
+@app.route("/logout", methods=["GET"])
+def logout():
+    logout_user()
+    return jsonify({"message": "Logged out"}), 200
+
 
 
 # Flaskの最後に追加

@@ -21,9 +21,19 @@ export const useUserStore = defineStore('user', {
       }
     },
     async logout() {
-      await axios.get('http://localhost:5000/logout', { withCredentials: true })
-      this.name = null
-      this.email = null
+      try {
+        await axios.get('http://localhost:5000/logout', {
+          withCredentials: true
+        })
+
+        this.name = null
+        this.email = null
+
+        const router = useRouter()
+        router.push('/')  // ← ホーム画面に遷移
+      } catch (e) {
+        console.error('ログアウトに失敗しました', e)
+      }
     }
   }
 })

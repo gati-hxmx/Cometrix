@@ -1,6 +1,7 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import Navbar from '@/components/Navbar.vue'
 
 const userStore = useUserStore()
 
@@ -10,23 +11,7 @@ function logout() {
 </script>
 
 <template>
-  <header>
-
-    <div class="wrapper">
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-
-        <RouterLink to="/about">About</RouterLink>
-                <RouterLink to="/Login">Login</RouterLink>
-      </nav>
-    </div>
-        <div v-if="userStore.isAuthenticated">
-      ようこそ、{{ userStore.name }}さん！
-      <button @click="logout">ログアウト</button>
-    </div>
-  </header>
-
+  <Navbar />
   <RouterView />
 </template>
 

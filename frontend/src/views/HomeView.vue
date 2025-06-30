@@ -1,7 +1,12 @@
 <template>
   <div class="p-4">
-    🏠 Home View<br />
-    ようこそ、{{ userStore.name || 'ゲスト' }} さん
+    🏠 Home View
+
+    <div v-if="userStore.name" class="mt-4">
+      <button @click="logout" class="bg-red-500 text-white px-4 py-2 rounded">
+        ログアウト
+      </button>
+    </div>
   </div>
 </template>
 
@@ -18,7 +23,11 @@ export default {
       userStore.fetchUser()
     })
 
-    return { userStore }
+    const logout = () => {
+      userStore.logout()
+    }
+
+    return { userStore, logout }
   }
 }
 </script>
