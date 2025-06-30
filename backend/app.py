@@ -1,53 +1,73 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, jsonify
+from flask_login import LoginManager, login_user, logout_user, current_user
+from flask_dance.contrib.google import google
 from config import Config
 from auth.oauth import create_google_blueprint
-from flask_dance.contrib.google import google
+from models.user import User
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# 認証ルーター
+# 🔑 セッションが効くように
+app.secret_key = app.config.get("SECRET_KEY", "dev")
+
+# ユーザー保存用
+user_store = {}
+
+# 認証ルート登録
 google_bp = create_google_blueprint()
 app.register_blueprint(google_bp, url_prefix="/login")
+
+# Flask-Login 初期化
+login_manager = LoginManager()
+login_manager.login_view = "google.login"
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return user_store.get(user_id)
 
 @app.route("/")
 def index():
     if not google.authorized:
         return redirect(url_for("google.login"))
-    try:
-        resp = google.get("/oauth2/v2/userinfo")
-        assert resp.ok, resp.text
-        return f"こんにちは {resp.json()['email']} さん！"
-    except Exception as e:
-        return f"エラーが発生しました: {str(e)}"
 
-# @app.route("/")
-# def index():
-#     if not google.authorized:
-#         return redirect(url_for("google.login"))
+    resp = google.get("/oauth2/v2/userinfo")
+    if not resp.ok:
+        return "ユーザー情報の取得に失敗しました", 500
 
-#     try:
-#         resp = google.get("/oauth2/v2/userinfo")
-#         if not resp.ok:
-#             return f"Google API error: {resp.text}", 500
+    info = resp.json()
+    user = User(id=info["id"], name=info["name"], email=info["email"])
+    user_store[user.id] = user
+    login_user(user)
+    return redirect("http://localhost:5173/")
 
-#         email = resp.json().get("email", "不明")
-#         return f"こんにちは {email} さん！"
-#     except Exception as e:
-#         return f"サーバーエラーが発生しました: {str(e)}", 500
-
-
-
-@app.route("/authorize")  # このルート名は redirect_to="google_authorized" に対応
+# 認証成功後の処理
+@app.route("/login/google/authorized")
 def google_authorized():
     if not google.authorized:
         return redirect(url_for("google.login"))
     resp = google.get("/oauth2/v2/userinfo")
-    assert resp.ok, resp.text
-    email = resp.json()["email"]
-    return f"こんにちは {email} さん！"
+    if not resp.ok:
+        return redirect("http://localhost:5173/login?error=auth_failed")
+    info = resp.json()
+    user = User(id=info["id"], name=info["name"], email=info["email"])
+    user_store[user.id] = user
+    login_user(user)
+    return redirect("http://localhost:5173/")
 
-@app.route("/test")
-def test():
-    return "TEST OK"
+# 認証状態確認用API
+@app.route("/api/userinfo")
+def userinfo():
+    if not google.authorized:
+        return jsonify({"error": "Unauthorized"}), 401
+    resp = google.get("/oauth2/v2/userinfo")
+    if not resp.ok:
+        return jsonify({"error": "Failed to fetch user info"}), 500
+    return jsonify(resp.json())
+
+
+# Flaskの最後に追加
+from flask_cors import CORS
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 

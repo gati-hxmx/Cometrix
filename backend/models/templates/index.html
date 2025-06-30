@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ログイン成功</title>
+</head>
+<body>
+    <h1>ようこそ {{ name }} さん！</h1>
+    <p>メールアドレス: {{ email }}</p>
+    <a href="{{ url_for('logout') }}">ログアウト</a>
+</body>
+</html>
