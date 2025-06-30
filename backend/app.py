@@ -66,6 +66,16 @@ def userinfo():
         return jsonify({"error": "Failed to fetch user info"}), 500
     return jsonify(resp.json())
 
+@app.route("/api/user")
+def get_user():
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'unauthorized'}), 401
+    return jsonify({
+        'name': current_user.name,
+        'email': current_user.email
+    })
+
+
 
 # Flaskの最後に追加
 from flask_cors import CORS

@@ -1,31 +1,24 @@
 <template>
   <div class="p-4">
     🏠 Home View<br />
-    ようこそ、{{ user?.name || 'ゲスト' }} さん
+    ようこそ、{{ userStore.name || 'ゲスト' }} さん
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: 'HomeView',
   setup() {
-    const user = ref(null)
+    const userStore = useUserStore()
 
-    onMounted(async () => {
-      try {
-        const res = await axios.get('http://localhost:5000/api/userinfo', {
-          withCredentials: true
-        })
-        user.value = res.data
-      } catch (e) {
-        console.warn("未認証")
-      }
+    onMounted(() => {
+      userStore.fetchUser()
     })
 
-    return { user }
+    return { userStore }
   }
 }
 </script>
