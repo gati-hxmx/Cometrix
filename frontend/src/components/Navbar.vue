@@ -1,23 +1,39 @@
-<!-- frontend/src/components/Navbar.vue -->
 <template>
-  <nav class="bg-gray-800 text-white p-4 flex justify-between items-center">
-    <RouterLink to="/" class="text-xl font-bold hover:text-gray-300">
-  Cometrix
-</RouterLink>
-    <div class="space-x-4">
-      <RouterLink to="/" class="hover:underline">Home</RouterLink>
-      <RouterLink to="/about" class="hover:underline">About</RouterLink>
-      <RouterLink v-if="!isLoggedIn" to="/login" class="hover:underline">Login</RouterLink>
+  <nav class="w-full bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <!-- 左: ロゴ -->
+        <div class="flex-shrink-0 text-blue-600 text-2xl font-semibold">
+          <RouterLink to="/" class="hover:text-blue-800">
+            Cometrix
+          </RouterLink>
+        </div>
 
-      <template v-if="isLoggedIn">
-        <span class="ml-2">{{ name }} </span>
-        <button
-          @click="logout"
-          class="ml-4 bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
-        >
-          ログアウト
-        </button>
-      </template>
+        <!-- 右: ナビゲーションリンク -->
+        <div class="flex items-center space-x-6 text-gray-700">
+          <RouterLink to="/" class="hover:text-blue-600">Home</RouterLink>
+          <RouterLink to="/about" class="hover:text-blue-600">About</RouterLink>
+          <RouterLink
+            v-if="!isLoggedIn"
+            to="/login"
+            class="hover:text-blue-600"
+          >
+            Login
+          </RouterLink>
+
+          <template v-if="isLoggedIn">
+            <span class="text-sm font-medium text-gray-600">
+              {{ name }}
+            </span>
+            <button
+              @click="logout"
+              class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+            >
+              ログアウト
+            </button>
+          </template>
+        </div>
+      </div>
     </div>
   </nav>
 </template>
