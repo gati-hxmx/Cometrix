@@ -5,14 +5,14 @@
         <!-- 左: ロゴ -->
         <div class="flex-shrink-0 text-blue-600 text-2xl font-semibold">
           <RouterLink to="/" class="hover:text-blue-800">
+            <img src="/brand_logo(favicon).png" alt="Cometrix Logo" class="inline-block h-10 mr-2">
             Cometrix
           </RouterLink>
         </div>
 
         <!-- 右: ナビゲーションリンク -->
         <div class="flex items-center space-x-6 text-gray-700">
-          <RouterLink to="/" class="hover:text-blue-600">Home</RouterLink>
-          <RouterLink to="/about" class="hover:text-blue-600">About</RouterLink>
+          <RouterLink to="/about" class="hover:text-blue-600">Cometrixについて</RouterLink>
           <RouterLink to="/analyze" class="hover:text-blue-600">分析画面</RouterLink>
           <RouterLink
             v-if="!isLoggedIn"

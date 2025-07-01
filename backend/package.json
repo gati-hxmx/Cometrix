@@ -7,5 +7,8 @@
     "dev:fastapi": "uvicorn api_app:app --reload --port 8000",
     "dev:flask": "FLASK_APP=auth_app flask run --port=5000",
     "dev:stripe": "FLASK_APP=stripe_app flask run --port=5001"
+  },
+  "dependencies": {
+    "chartjs-plugin-zoom": "^2.2.0"
   }
 }

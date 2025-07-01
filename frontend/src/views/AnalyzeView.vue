@@ -6,11 +6,28 @@ import { useChatStore } from '@/stores/chat'
 import YoutubePlayer from '@/components/analyze/YoutubePlayer.vue'
 import ChatList from '@/components/analyze/ChatList.vue'
 import ChatVolumeChart from '@/components/analyze/ChatVolumeChart.vue'
+import LoadingOverlay from '@/components/analyze/common/LoadingOverlay.vue';
+// AnalyzeView.vue の <script setup> の冒頭に以下を追加
+import { ref } from 'vue'
+import TestChart from './TestChart.vue';
+
 
 const chat = useChatStore()
 
 const handleVideoIdSubmit = (videoId) => {
   chat.fetchChatData(videoId)
+}
+
+
+const isLoading = ref(false)
+
+function startAnalysis() {
+  isLoading.value = true
+
+  // 仮に2秒待って完了する処理（あとでAPIに置き換える）
+  setTimeout(() => {
+    isLoading.value = false
+  }, 2000)
 }
 </script>
 
@@ -32,12 +49,16 @@ const handleVideoIdSubmit = (videoId) => {
     <ChatList />
   </div>
 </div>
-<ChatVolumeChart />
+<!-- <ChatVolumeChart /> -->
+  <TestChart />
 
     <div v-if="videoId" class="mt-6">
       <p>取得した動画ID: <strong>{{ videoId }}</strong></p>
       <!-- 次ステップへ進める -->
     </div>
   </main>
+  <LoadingOverlay v-if="isLoading" />
+ 
+ 
   </DefaultLayout>
 </template>

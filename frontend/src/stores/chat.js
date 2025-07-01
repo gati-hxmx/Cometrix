@@ -7,7 +7,8 @@ export const useChatStore = defineStore('chat', {
     comments: [],
     volumePer30s: [],
     loading: false,
-    error: null
+    error: null,
+    highlightedIndex: null // ← 追加
   }),
   actions: {
     async fetchChatData(videoId) {
@@ -26,6 +27,12 @@ export const useChatStore = defineStore('chat', {
       } finally {
         this.loading = false
       }
+    },
+    setHighlightedIndex(index) {
+      this.highlightedIndex = index
+    },
+    clearHighlightedIndex() {
+      this.highlightedIndex = null
     }
   }
 })
