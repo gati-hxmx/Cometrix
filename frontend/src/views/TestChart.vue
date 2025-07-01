@@ -1,11 +1,8 @@
 <template>
   <div class="w-full max-w-5xl h-[300px] mx-auto mt-6 rounded border shadow bg-white flex items-center justify-center">
-    <!-- チャートあり -->
     <template v-if="chat.volumePer30s.length > 0">
       <canvas ref="canvasRef" class="w-full h-full" />
     </template>
-
-    <!-- チャートなし -->
     <template v-else>
       <div class="text-gray-400 text-sm">チャートデータがありません</div>
     </template>
@@ -23,12 +20,10 @@ Chart.register(...registerables, zoomPlugin)
 const chat = useChatStore()
 const canvasRef = ref(null)
 let chartInstance = null
+const clickedIndex = ref(null)  // 🔸 クリックされたバーのインデックスを保持
 
 const drawChart = () => {
-  if (!canvasRef.value) {
-    console.warn('Canvas not ready')
-    return
-  }
+  if (!canvasRef.value) return
 
   const ctx = canvasRef.value.getContext('2d')
   if (!ctx) return
@@ -37,22 +32,49 @@ const drawChart = () => {
     chartInstance.destroy()
   }
 
+  const labels = chat.volumePer30s.map(v => v.start_str)
+  const dataValues = chat.volumePer30s.map(v => v.count)
+
+  // 🔸 バーの色設定：クリックしたバーだけピンク
+  const backgroundColors = dataValues.map((_, idx) =>
+    idx === clickedIndex.value ? 'rgba(255, 99, 132, 1)' : 'rgba(59, 130, 246, 0.3)'
+  )
+  const hoverBackgroundColors = dataValues.map((_, idx) =>
+    idx === clickedIndex.value ? 'rgba(255, 99, 132, 1)' : 'rgba(59, 130, 246, 1)'
+  )
+
   chartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: chat.volumePer30s.map(v => v.start_str),
+      labels,
       datasets: [
         {
           label: 'チャット数（30秒ごと）',
-          backgroundColor: 'rgba(59, 130, 246, 0.3)',
-          hoverBackgroundColor: 'rgba(59, 130, 246, 1)',
-          data: chat.volumePer30s.map(v => v.count)
+          data: dataValues,
+          backgroundColor: backgroundColors,
+          hoverBackgroundColor: hoverBackgroundColors
         }
       ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: false,
+      onClick: (e, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index
+            clickedIndex.value = index
+
+            // ✅ 該当のバーのタイムスタンプを Pinia に保存
+            const selectedTimestamp = chat.volumePer30s[index]?.start_str
+            if (selectedTimestamp) {
+              chat.setSelectedTimestamp(selectedTimestamp)
+            }
+
+            drawChart()  // 🔄 ピンクで再描画
+          }
+        },
+
       scales: {
         x: {
           title: { display: true, text: '時間（配信内）' },
@@ -89,7 +111,7 @@ const drawChart = () => {
   })
 }
 
-// 📌 Piniaの volumePer30s を監視して、更新時に再描画
+// 🔁 volumePer30s が更新されたらチャート再描画
 watch(
   () => chat.volumePer30s,
   async (val) => {
@@ -101,7 +123,7 @@ watch(
   { deep: true }
 )
 
-// ✅ コンポーネント破棄時にチャートも破棄
+// 🧹 コンポーネント破棄時にチャート破棄
 onBeforeUnmount(() => {
   if (chartInstance) {
     chartInstance.destroy()

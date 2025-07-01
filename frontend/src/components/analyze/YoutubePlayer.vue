@@ -1,19 +1,74 @@
 <script setup>
 import { useChatStore } from '@/stores/chat'
-import { computed } from 'vue'
+import { computed, watch, ref, onMounted, nextTick } from 'vue'
 
 const chat = useChatStore()
+const embedUrl = ref('')
+const currentTime = ref(0)
 
-const embedUrl = computed(() => {
-  return chat.videoId
-    ? `https://www.youtube.com/embed/${chat.videoId}`
-    : ''
+let player = null
+
+function timeStrToSeconds(timeStr) {
+  const [h, m, s] = timeStr.split(':').map(Number)
+  return h * 3600 + m * 60 + s
+}
+
+// ▶️ URL設定：videoId または selectedTimestamp に応じて更新
+watch(
+  () => chat.videoId,
+  (newId) => {
+    if (newId) {
+      embedUrl.value = `https://www.youtube.com/embed/${newId}?enablejsapi=1`
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => chat.selectedTimestamp,
+  (newTime) => {
+    if (chat.videoId && newTime) {
+      const seconds = timeStrToSeconds(newTime)
+      embedUrl.value = `https://www.youtube.com/embed/${chat.videoId}?start=${seconds}&autoplay=1&enablejsapi=1`
+    }
+  }
+)
+
+
+
+onMounted(async () => {
+  await nextTick()
+
+  const createPlayer = () => {
+    player = new YT.Player('youtube-player', {
+      events: {
+        onReady: () => {
+          console.log('✅ Player ready')
+          setInterval(() => {
+            if (player?.getCurrentTime) {
+              currentTime.value = Math.floor(player.getCurrentTime())
+            }
+          }, 1000)
+        }
+      }
+    })
+  }
+
+  if (window.YT && window.YT.Player) {
+    createPlayer()
+  } else {
+    const tag = document.createElement('script')
+    tag.src = 'https://www.youtube.com/iframe_api'
+    document.head.appendChild(tag)
+    window.onYouTubeIframeAPIReady = createPlayer
+  }
 })
 </script>
 
 <template>
   <div class="w-full h-full rounded overflow-hidden shadow bg-black/10">
     <iframe
+      id="youtube-player"
       v-if="chat.videoId"
       :src="embedUrl"
       frameborder="0"
@@ -21,9 +76,11 @@ const embedUrl = computed(() => {
       allowfullscreen
       class="w-full h-full"
     ></iframe>
+
     <div v-else class="flex items-center justify-center w-full h-full text-gray-500 text-sm">
       ここにYouTube動画が表示されます
     </div>
   </div>
-</template>
 
+  <p class="text-sm text-center mt-2">再生位置：{{ currentTime }} 秒</p>
+</template>

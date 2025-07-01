@@ -8,7 +8,9 @@ export const useChatStore = defineStore('chat', {
     volumePer30s: [],
     loading: false,
     error: null,
-    highlightedIndex: null // ← 追加
+    highlightedIndex: null, // ← 追加
+    selectedTimestamp: null,
+    currentTime: 0,
   }),
   actions: {
     async fetchChatData(videoId) {
@@ -33,6 +35,12 @@ export const useChatStore = defineStore('chat', {
     },
     clearHighlightedIndex() {
       this.highlightedIndex = null
-    }
+    },
+      setSelectedTimestamp(ts) {
+    this.selectedTimestamp = ts
+  },
+setCurrentTime(time) {
+  this.currentTime = time
+}
   }
 })
