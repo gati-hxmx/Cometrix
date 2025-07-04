@@ -4,6 +4,7 @@ from flask_dance.contrib.google import google
 from config import Config
 from auth.oauth import create_google_blueprint
 from models.user import User
+from db import upsert_user 
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -38,8 +39,10 @@ def index():
 
     info = resp.json()
     user = User(id=info["id"], name=info["name"], email=info["email"])
+    upsert_user(user.id, user.name, user.email) 
     user_store[user.id] = user
     login_user(user)
+    upsert_user(user.id, user.name, user.email)
     return redirect("http://localhost:5173/")
 
 # 認証成功後の処理
@@ -52,8 +55,10 @@ def google_authorized():
         return redirect("http://localhost:5173/login?error=auth_failed")
     info = resp.json()
     user = User(id=info["id"], name=info["name"], email=info["email"])
+    upsert_user(user.id, user.name, user.email)
     user_store[user.id] = user
     login_user(user)
+    upsert_user(user.id, user.name, user.email)
     return redirect("http://localhost:5173/")
 
 # 認証状態確認用API

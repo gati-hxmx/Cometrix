@@ -54,14 +54,16 @@ onMounted(async () => {
     })
   }
 
-  if (window.YT && window.YT.Player) {
-    createPlayer()
-  } else {
-    const tag = document.createElement('script')
-    tag.src = 'https://www.youtube.com/iframe_api'
-    document.head.appendChild(tag)
-    window.onYouTubeIframeAPIReady = createPlayer
-  }
+if (window.YT && typeof window.YT.Player === 'function') {
+  createPlayer()
+} else if (!document.getElementById('youtube-api')) {
+  const tag = document.createElement('script')
+  tag.src = 'https://www.youtube.com/iframe_api'
+  tag.id = 'youtube-api'
+  document.head.appendChild(tag)
+  window.onYouTubeIframeAPIReady = createPlayer
+}
+
 })
 </script>
 
