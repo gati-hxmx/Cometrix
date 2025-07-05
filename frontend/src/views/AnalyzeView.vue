@@ -48,9 +48,13 @@ function startAnalysis() {
   </div>
 
   <!-- 右：チャット（動画の高さ: 16:9 → 約56.25%） -->
-  <div class="w-1/4" style="height: calc((100vw * 0.75) * 0.5625);">
-    <ChatList />
-  </div>
+<div
+  class="w-1/4 overflow-y-auto"
+  style="height: calc((100vw * 0.6) * 0.5625); max-height: 380px;"
+>
+  <ChatList />
+</div>
+
 </div>
 <!-- <ChatVolumeChart /> -->
   <TestChart />
