@@ -2,6 +2,24 @@
 <template>
   <div class="w-full max-w-xl mx-auto">
     <form @submit.prevent="handleSubmit" class="flex gap-2">
+            <!-- YouTube -->
+      <div class="flex items-center gap-3">
+        <img
+          src="/Users/uedahayato/Develp/Cometrix/commetrix/frontend/src/assets/yt_logo_rgb_light.png"
+          alt="YouTube"
+          class="h-4"
+        />
+      </div>
+
+      <!-- Twitch -->
+      <div class="flex items-center gap-3">
+        <img
+          src="/Users/uedahayato/Develp/Cometrix/commetrix/frontend/src/assets/glitch_flat_purple.svg"
+          alt="Twitch"
+          class="h-6"
+        />
+      </div>
+
       <input
         v-model="url"
         type="text"

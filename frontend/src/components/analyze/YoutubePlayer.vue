@@ -47,9 +47,11 @@ onMounted(async () => {
           setInterval(() => {
             if (player?.getCurrentTime) {
               currentTime.value = Math.floor(player.getCurrentTime())
+              chat.setCurrentTime(currentTime.value)  // ← Pinia に反映！
             }
           }, 1000)
-        }
+        },
+
       }
     })
   }
@@ -65,6 +67,15 @@ if (window.YT && typeof window.YT.Player === 'function') {
 }
 
 })
+
+function formatTime(seconds) {
+  const h = Math.floor(seconds / 3600).toString().padStart(2, '0')
+  const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')
+  const s = Math.floor(seconds % 60).toString().padStart(2, '0')
+  return `${h}:${m}:${s}`
+}
+
+const currentTimeStr = computed(() => formatTime(currentTime.value))
 </script>
 
 <template>
@@ -84,5 +95,4 @@ if (window.YT && typeof window.YT.Player === 'function') {
     </div>
   </div>
 
-  <p class="text-sm text-center mt-2">再生位置：{{ currentTime }} 秒</p>
 </template>

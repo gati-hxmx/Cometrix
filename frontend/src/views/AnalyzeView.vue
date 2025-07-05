@@ -11,6 +11,8 @@ import LoadingOverlay from '@/components/analyze/common/LoadingOverlay.vue';
 import { ref } from 'vue'
 import TestChart from './TestChart.vue';
 import TwitchPlayer from '@/components/analyze/TwitchPlayer.vue'
+import CommentStats from '@/components/analyze/CommentStats.vue'
+import PlaybackTime from '@/components/analyze/PlaybackTime.vue'
 
 
 const chat = useChatStore()
@@ -55,7 +57,13 @@ function startAnalysis() {
   <ChatList />
 </div>
 
+
 </div>
+<div class="flex gap-8 mt-6">
+  <CommentStats />
+  <PlaybackTime />
+</div>
+
 <!-- <ChatVolumeChart /> -->
   <TestChart />
 
