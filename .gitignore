@@ -15,3 +15,6 @@ venv/
 
 # dotenv
 .env
+
+# TwitchDownloaderCLI 実行バイナリを除外
+backend/TwitchDownloaderCLI
