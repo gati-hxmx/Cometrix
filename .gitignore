@@ -18,3 +18,7 @@ venv/
 
 # TwitchDownloaderCLI 実行バイナリを除外
 backend/TwitchDownloaderCLI
+
+# Twitch CLI バイナリとチャットデータを除外
+backend/TwitchDownloaderCLI
+backend/chat_data/
