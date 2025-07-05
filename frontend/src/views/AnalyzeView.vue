@@ -45,7 +45,10 @@ function startAnalysis() {
     <div class="aspect-video">
       <YoutubePlayer v-if="chat.platform === 'youtube'" />
       <TwitchPlayer v-else-if="chat.platform === 'twitch'" />
-      <div v-else class="text-gray-500">対応していない動画です</div>
+
+          <div v-else class="flex items-center justify-center w-full h-full text-gray-500 text-sm">
+      ここに動画が表示されます
+    </div>
     </div>
   </div>
 
