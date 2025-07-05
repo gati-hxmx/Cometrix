@@ -1,13 +1,11 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useChatStore } from '@/stores/chat'
 
 const chat = useChatStore()
+const copiedIndex = ref(null) // どのチャットがコピーされたか
 
-// ✅ 表示範囲（±15秒）
 const RANGE = 20
-
-// ✅ フィルタされたチャット一覧
 const visibleComments = computed(() => {
   const now = chat.currentTime
   return chat.comments
@@ -15,8 +13,23 @@ const visibleComments = computed(() => {
       const ts = Math.floor(c.timestamp)
       return ts >= now - RANGE && ts <= now
     })
-    .sort((a, b) => b.timestamp - a.timestamp) // 🔁 降順
+    .sort((a, b) => b.timestamp - a.timestamp)
 })
+
+// 📋 コピー処理
+async function copyText(text, index) {
+  try {
+    await navigator.clipboard.writeText(text)
+    copiedIndex.value = index
+
+    // 1.5秒後にメッセージを非表示
+    setTimeout(() => {
+      if (copiedIndex.value === index) copiedIndex.value = null
+    }, 1500)
+  } catch (err) {
+    console.error('コピーに失敗:', err)
+  }
+}
 </script>
 
 <template>
@@ -27,10 +40,15 @@ const visibleComments = computed(() => {
           <li
             v-for="(c, i) in visibleComments"
             :key="i"
-            class="px-4 py-2"
+            class="px-4 py-2 hover:bg-blue-50 transition rounded cursor-pointer"
+            @click="copyText(`${c.text}`, i)"
           >
             <div class="text-xs text-gray-500">{{ c.time_str }} | {{ c.author }}</div>
             <div class="text-gray-800">{{ c.text }}</div>
+            <div v-if="copiedIndex === i" class="text-xs text-green-500 mt-1 h-4 transition-opacity opacity-100">
+              コピーしました！
+            </div>
+            <div v-else class="h-4 opacity-0"></div> <!-- レイアウト固定用 -->
           </li>
         </ul>
       </template>
