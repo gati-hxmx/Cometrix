@@ -2,8 +2,9 @@ import json
 from datetime import timedelta
 from typing import List, Dict
 from collections import defaultdict
+import os  # ファイル保存のため
 
-def fetch_chat_data(json_path: str) -> Dict:
+def fetch_chat_data(json_path: str, video_id: str) -> Dict:
     comments = []
     with open(json_path, "r", encoding="utf-8") as f:
         all_data = json.load(f)
@@ -29,6 +30,17 @@ def fetch_chat_data(json_path: str) -> Dict:
                 print(f"[WARN] Skipped one comment: {e}")
 
     volume_per_30s = compute_volume_per_30s(comments)
+
+    # ✅ chat_data に保存
+    save_dir = "backend/chat_data"
+    os.makedirs(save_dir, exist_ok=True)
+    save_path = os.path.join(save_dir, f"twitch_{video_id}.json")
+
+    with open(save_path, "w", encoding="utf-8") as f_out:
+        json.dump({
+            "comments": comments,
+            "volume_per_30s": volume_per_30s
+        }, f_out, ensure_ascii=False, indent=2)
 
     return {
         "comments": comments,
