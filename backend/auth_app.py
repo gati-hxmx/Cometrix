@@ -50,12 +50,18 @@ def index():
 
 @app.route("/login/google/authorized")
 def google_authorized():
+    print("📥 /login/google/authorized に到達")
     if not google.authorized:
-        return redirect(url_for("google.login"))
+        print("🟥 google.authorized = False")
+        return redirect("http://localhost:5173/")
+
     resp = google.get("/oauth2/v2/userinfo")
     if not resp.ok:
+        print("🟥 ユーザー情報取得に失敗:", resp.text)
         return redirect("http://localhost:5173/login?error=auth_failed")
+
     info = resp.json()
+    print("✅ ユーザー情報取得:", info)
     user = User(id=info["id"], name=info["name"], email=info["email"])
     user.db_id = get_user_db_id(user.id)
     user_store[user.id] = user
@@ -85,7 +91,8 @@ def get_user():
 @app.route("/logout", methods=["GET"])
 def logout():
     logout_user()
-    return jsonify({"message": "Logged out"}), 200
+    return '', 204  # ←空を返すことでフロントの fetch が .json() を要求しない
+
 
 # CORS
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
@@ -93,25 +100,11 @@ CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 @app.route("/api/subscription")
 def get_subscription():
     if not current_user.is_authenticated:
-        print("🟥 current_user is not authenticated")
         return jsonify({'error': 'unauthorized'}), 401
 
     try:
-        print("🔍 current_user:", current_user)
-        print("🔍 current_user.id:", current_user.id)
-        print("🔍 current_user.name:", current_user.name)
-        print("🔍 current_user.email:", current_user.email)
-
-        # db_id があるかを確認（Flask-Login によって User クラスの属性が維持されてるか）
-        if not hasattr(current_user, 'db_id'):
-            print("🟥 current_user.db_id が存在しません")
-            return jsonify({'error': 'db_id_missing'}), 500
-
-        print("✅ current_user.db_id:", current_user.db_id)
-
         conn = get_connection()
         cur = conn.cursor()
-
         cur.execute("SELECT plan, status FROM subscriptions WHERE user_id = %s ORDER BY id DESC LIMIT 1", (current_user.db_id,))
         result = cur.fetchone()
         cur.close()
@@ -125,16 +118,8 @@ def get_subscription():
         else:
             return jsonify({'plan': 'free', 'status': 'inactive'})  # ← デフォルト
     except Exception as e:
-        print('🟥 サブスクリプション取得失敗:', repr(e))
+        print('🟥 サブスクリプション取得失敗:', e)
         return jsonify({'error': 'internal_error'}), 500
-    
-@login_manager.user_loader
-def load_user(user_id):
-    print(f"🔍 user_loader 呼び出し: user_id={user_id}")
-    user = user_store.get(user_id)
-    print(f"🔍 user_store から復元されたユーザー: {user}")
-    return user
-
 
 
 

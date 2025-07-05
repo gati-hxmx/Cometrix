@@ -10,12 +10,13 @@ import LoadingOverlay from '@/components/analyze/common/LoadingOverlay.vue';
 // AnalyzeView.vue の <script setup> の冒頭に以下を追加
 import { ref } from 'vue'
 import TestChart from './TestChart.vue';
+import TwitchPlayer from '@/components/analyze/TwitchPlayer.vue'
 
 
 const chat = useChatStore()
 
-const handleVideoIdSubmit = (videoId) => {
-  chat.fetchChatData(videoId)
+const handleVideoIdSubmit = ({ platform, videoId }) => {
+  chat.fetchChatData(platform, videoId)
 }
 
 
@@ -40,7 +41,9 @@ function startAnalysis() {
   <!-- 左：動画 -->
   <div class="w-3/4">
     <div class="aspect-video">
-      <YoutubePlayer />
+      <YoutubePlayer v-if="chat.platform === 'youtube'" />
+      <TwitchPlayer v-else-if="chat.platform === 'twitch'" />
+      <div v-else class="text-gray-500">対応していない動画です</div>
     </div>
   </div>
 

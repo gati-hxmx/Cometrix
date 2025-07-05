@@ -20,39 +20,47 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, watch } from 'vue';
+<script setup>
+import { ref } from 'vue'
 
-const url = ref('');
-const errorMessage = ref('');
-const isSubmitting = ref(false);
+const url = ref('')
+const errorMessage = ref('')
+const isSubmitting = ref(false)
 
-// イベントを親にemit
-const emit = defineEmits<{
-  (e: 'submit', videoId: string): void;
-}>();
+const emit = defineEmits(['submit'])
 
-function extractVideoId(inputUrl: string): string | null {
-  const regExp = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-  const match = inputUrl.match(regExp);
-  return match ? match[1] : null;
+function extractVideoIdAndPlatform(inputUrl) {
+  const trimmed = inputUrl.trim()
+
+  // YouTube
+  const ytMatch = trimmed.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+  if (ytMatch) {
+    return { platform: 'youtube', videoId: ytMatch[1] }
+  }
+
+  // Twitch
+  const twitchMatch = trimmed.match(/twitch\.tv\/videos\/(\d+)/)
+  if (twitchMatch) {
+    return { platform: 'twitch', videoId: twitchMatch[1] }
+  }
+
+  return null
 }
 
 function handleSubmit() {
-  errorMessage.value = '';
-  const id = extractVideoId(url.value.trim());
+  errorMessage.value = ''
+  const result = extractVideoIdAndPlatform(url.value)
 
-  if (!id) {
-    errorMessage.value = '有効なYouTubeのURLを入力してください';
-    return;
+  if (!result) {
+    errorMessage.value = '有効なYouTubeまたはTwitchのURLを入力してください'
+    return
   }
 
-  isSubmitting.value = true;
+  isSubmitting.value = true
 
-  // 少し遅延させてUX感を出す（後で削除してOK）
   setTimeout(() => {
-    emit('submit', id);
-    isSubmitting.value = false;
-  }, 300);
+    emit('submit', result) // { platform, videoId }
+    isSubmitting.value = false
+  }, 300)
 }
 </script>
