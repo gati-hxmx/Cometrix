@@ -14,8 +14,11 @@ import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { useChatStore } from '@/stores/chat'
+import annotationPlugin from 'chartjs-plugin-annotation'
 
-Chart.register(...registerables, zoomPlugin)
+
+
+Chart.register(...registerables, zoomPlugin,annotationPlugin)
 
 const chat = useChatStore()
 const canvasRef = ref(null)
@@ -110,6 +113,8 @@ const drawChart = () => {
     }
   })
 }
+
+
 
 // 🔁 volumePer30s が更新されたらチャート再描画
 watch(

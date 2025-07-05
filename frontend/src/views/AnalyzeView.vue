@@ -13,7 +13,12 @@ import TestChart from './TestChart.vue';
 import TwitchPlayer from '@/components/analyze/TwitchPlayer.vue'
 import CommentStats from '@/components/analyze/CommentStats.vue'
 import PlaybackTime from '@/components/analyze/PlaybackTime.vue'
+import MemoEditor from '@/components/analyze/MemoEditor.vue'
 
+
+
+const tabs = ['チャット', '字幕', 'メモ']
+const activeTab = ref('チャット')
 
 const chat = useChatStore()
 
@@ -52,13 +57,34 @@ function startAnalysis() {
     </div>
   </div>
 
-  <!-- 右：チャット（動画の高さ: 16:9 → 約56.25%） -->
+<!-- 右：チャットエリアをタブ付きにする -->
 <div
-  class="w-1/4 overflow-y-auto"
-  style="height: calc((100vw * 0.6) * 0.5625); max-height: 380px;"
+  class="w-1/4 overflow-hidden border rounded shadow bg-white"
+  style="height: calc((100vw * 0.6) * 0.6); max-height: 380px;"
 >
-  <ChatList />
+  <!-- タブヘッダー -->
+  <div class="flex border-b text-sm font-medium">
+    <button
+      v-for="tab in tabs"
+      :key="tab"
+      @click="activeTab = tab"
+      :class="[
+        'flex-1 py-2 text-center hover:bg-gray-100',
+        activeTab === tab ? 'bg-blue-100 font-bold' : 'bg-white'
+      ]"
+    >
+      {{ tab }}
+    </button>
+  </div>
+
+  <!-- タブの内容 -->
+  <div class="overflow-y-auto h-full">
+    <ChatList v-if="activeTab === 'チャット'" />
+    <div v-else-if="activeTab === '字幕'" class="p-4 text-sm text-gray-600">字幕はまだ未実装です</div>
+    <div v-else-if="activeTab === 'メモ'" class="p-4 text-sm text-gray-600"><MemoEditor /></div>
+  </div>
 </div>
+
 
 
 </div>

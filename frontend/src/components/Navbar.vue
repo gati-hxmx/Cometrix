@@ -17,10 +17,14 @@
           <RouterLink
             v-if="!isLoggedIn"
             to="/login"
-            class="hover:text-blue-600"
+            class="text-blue-500 px-4 py-2  text-m transition duration-200 flex items-center gap-2"
           >
-            Login
+            <LogIn class="w-4 h-4" />
+            ログイン
           </RouterLink>
+
+
+
 
         <template v-if="isLoggedIn">
           <RouterLink
@@ -47,6 +51,7 @@
 import { computed } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { LogIn } from 'lucide-vue-next'
 
 const router = useRouter()
 const userStore = useUserStore()

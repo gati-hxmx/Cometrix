@@ -8,10 +8,15 @@
 
 
   </div>
-        <!-- フッター -->
+  <!-- フッター -->
     <footer class="bg-white border-t text-center text-sm text-gray-500 py-4">
       © Cometrix 2025. All rights reserved.
+      |
+      <RouterLink to="/leagal" class="mx-2 hover:underline">利用規約</RouterLink>
+      <RouterLink to="/privacypolicy" class="mx-2 hover:underline">プライバシーポリシー</RouterLink>
     </footer>
+
+
 </template>
 
 <script setup>
