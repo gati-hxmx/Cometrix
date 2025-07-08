@@ -4,7 +4,8 @@ from flask_dance.contrib.google import google
 from config import Config
 from auth.oauth import create_google_blueprint
 from models.user import User
-from db import upsert_user 
+from db_logic import upsert_user 
+from datetime import datetime
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -30,36 +31,79 @@ def load_user(user_id):
 
 @app.route("/")
 def index():
+    print("🚪 / にアクセスされました")
+
     if not google.authorized:
+        print("🟥 google.authorized = False → ログイン画面へリダイレクト")
         return redirect(url_for("google.login"))
 
-    resp = google.get("/oauth2/v2/userinfo")
-    if not resp.ok:
-        return "ユーザー情報の取得に失敗しました", 500
+    print("🔐 google.authorized = True")
 
-    info = resp.json()
-    user = User(id=info["id"], name=info["name"], email=info["email"])
-    upsert_user(user.id, user.name, user.email) 
-    user_store[user.id] = user
-    login_user(user)
-    upsert_user(user.id, user.name, user.email)
-    return redirect("http://localhost:5173/")
+    try:
+        resp = google.get("/oauth2/v2/userinfo")
+        if not resp.ok:
+            print("🟥 ユーザー情報の取得に失敗:", resp.text)
+            return "ユーザー情報の取得に失敗しました", 500
+
+        info = resp.json()
+        print("🖼️ Googleユーザー情報:", info)
+
+        user = User(id=info["id"], name=info["name"], email=info["email"])
+        print("👤 User オブジェクト作成:", user)
+
+        upsert_user(user.id, user.name, user.email)
+        print("✅ ユーザー情報をDBに upsert 完了")
+
+        user_store[user.id] = user
+        print("💾 ユーザー情報を user_store に保存")
+
+        login_user(user)
+        print("🔓 login_user 実行完了")
+
+        return redirect("http://localhost:5173/")
+    except Exception as e:
+        print("🟥 例外発生:", e)
+        return "内部エラー", 500
+
 
 # 認証成功後の処理
+from datetime import datetime
+
 @app.route("/login/google/authorized")
 def google_authorized():
+    print("📥 /login/google/authorized に到達✅")
+
     if not google.authorized:
+        print("🟥 google.authorized = False")
         return redirect(url_for("google.login"))
+
     resp = google.get("/oauth2/v2/userinfo")
     if not resp.ok:
+        print("🟥 ユーザー情報取得に失敗:", resp.text)
         return redirect("http://localhost:5173/login?error=auth_failed")
+
     info = resp.json()
-    user = User(id=info["id"], name=info["name"], email=info["email"])
-    upsert_user(user.id, user.name, user.email)
+    print("🖼️ Googleユーザー情報:", info)  # ← これが出るか確認
+
+    user = User(
+        id=info["id"],
+        name=info["name"],
+        email=info["email"]
+    )
+
     user_store[user.id] = user
     login_user(user)
-    upsert_user(user.id, user.name, user.email)
+
+    upsert_user(
+        user_id=user.id,
+        name=user.name,
+        email=user.email,
+        profile_image_url=info.get("picture"),
+        last_login_at=datetime.utcnow()
+    )
+
     return redirect("http://localhost:5173/")
+
 
 # 認証状態確認用API
 @app.route("/api/userinfo")

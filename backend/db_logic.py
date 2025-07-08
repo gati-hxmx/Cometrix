@@ -4,17 +4,22 @@ from db import get_connection
 # db_logic.py の中を db.py のバージョンに揃える
 
 
-def upsert_user(user_id, name, email):
+def upsert_user(user_id, name, email, profile_image_url=None, last_login_at=None):
     try:
         conn = get_connection()
         cur = conn.cursor()
 
         cur.execute("""
-            INSERT INTO users (google_id, name, email)
-            VALUES (%s, %s, %s)
+            INSERT INTO users (google_id, name, email, profile_image_url, last_login_at)
+            VALUES (%s, %s, %s, %s, %s)
             ON CONFLICT (google_id)
-            DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email, updated_at = CURRENT_TIMESTAMP;
-        """, (user_id, name, email))
+            DO UPDATE SET 
+                name = EXCLUDED.name, 
+                email = EXCLUDED.email,
+                profile_image_url = EXCLUDED.profile_image_url,
+                last_login_at = EXCLUDED.last_login_at,
+                updated_at = CURRENT_TIMESTAMP;
+        """, (user_id, name, email, profile_image_url, last_login_at))
 
         conn.commit()
         cur.close()
@@ -22,6 +27,7 @@ def upsert_user(user_id, name, email):
         print("✅ ユーザー登録/更新 完了")
     except Exception as e:
         print("🟥 ユーザー登録失敗:", e)
+
 
 
 def upsert_subscription(user_id):

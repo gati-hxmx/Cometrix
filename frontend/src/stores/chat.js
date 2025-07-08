@@ -12,7 +12,70 @@ export const useChatStore = defineStore('chat', {
     highlightedIndex: null,
     selectedTimestamp: null,
     currentTime: 0,
+        filters: {
+      includeWords: [],
+      excludeWords: [],
+      includeUsers: [],
+      excludeUsers: [],
+    }
   }),
+
+  getters: {
+    // ✅ フィルタが有効かどうか
+    isFilterActive(state) {
+      const f = state.filters
+      return (
+        f.includeWords.length > 0 ||
+        f.excludeWords.length > 0 ||
+        f.includeUsers.length > 0 ||
+        f.excludeUsers.length > 0
+      )
+    },
+
+    // ✅ フィルタ適用後のチャット一覧
+    filteredComments(state) {
+      return state.comments.filter(c => {
+        const { text, author } = c
+        const f = state.filters
+
+        if (f.includeWords.length > 0 &&
+            !f.includeWords.some(word => text.includes(word))) {
+          return false
+        }
+        if (f.excludeWords.some(word => text.includes(word))) {
+          return false
+        }
+        if (f.includeUsers.length > 0 &&
+            !f.includeUsers.includes(author)) {
+          return false
+        }
+        if (f.excludeUsers.includes(author)) {
+          return false
+        }
+
+        return true
+      })
+    },
+
+    // ✅ フィルタ適用後の30秒ごとのチャット数
+    filteredVolumePer30s(state) {
+      const bins = {}
+
+      state.filteredComments.forEach(c => {
+        const sec = Math.floor(c.timestamp)
+        const bin = Math.floor(sec / 30) * 30
+        bins[bin] = (bins[bin] || 0) + 1
+      })
+
+      return Object.entries(bins)
+        .sort((a, b) => a[0] - b[0])
+        .map(([timestamp, count]) => ({
+          timestamp: Number(timestamp),
+          count
+        }))
+    }
+  },
+  
   actions: {
     // ✅ platform も受け取る
     async fetchChatData(platform, videoId) {
@@ -41,6 +104,16 @@ export const useChatStore = defineStore('chat', {
         this.error = err.message
       } finally {
         this.loading = false
+      }
+    },
+
+        // ✅ フィルタ条件の更新
+    setFilters(newFilters) {
+      this.filters = {
+        includeWords: newFilters.includeWords || [],
+        excludeWords: newFilters.excludeWords || [],
+        includeUsers: newFilters.includeUsers || [],
+        excludeUsers: newFilters.excludeUsers || [],
       }
     },
 

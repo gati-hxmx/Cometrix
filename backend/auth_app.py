@@ -12,6 +12,7 @@ from db_logic import get_active_subscription
 from flask import jsonify
 from flask_login import current_user
 from db_logic import get_user_db_id
+from datetime import datetime
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -44,7 +45,7 @@ def index():
     user.db_id = get_user_db_id(user.id)
     user_store[user.id] = user
     login_user(user)
-    upsert_user(user.id, user.name, user.email)
+    upsert_user(user.id, user.name, user.email, user.profile_image_url, user.last_login_at)
     upsert_subscription(user.id)
     return redirect("http://localhost:5173/")
 
@@ -66,7 +67,7 @@ def google_authorized():
     user.db_id = get_user_db_id(user.id)
     user_store[user.id] = user
     login_user(user)
-    upsert_user(user.id, user.name, user.email)
+    upsert_user(user.id, user.name, user.email, user.profile_image_url, user.last_login_at)
     upsert_subscription(user.id)
     return redirect("http://localhost:5173/")
 

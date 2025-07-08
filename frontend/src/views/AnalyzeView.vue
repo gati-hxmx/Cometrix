@@ -14,6 +14,8 @@ import TwitchPlayer from '@/components/analyze/TwitchPlayer.vue'
 import CommentStats from '@/components/analyze/CommentStats.vue'
 import PlaybackTime from '@/components/analyze/PlaybackTime.vue'
 import MemoEditor from '@/components/analyze/MemoEditor.vue'
+import ChatFilter from '@/components/analyze/ChatFilter.vue'
+// import ChatChart from '@/components/ChatChart.vue'
 
 
 
@@ -91,6 +93,9 @@ function startAnalysis() {
 <div class="flex gap-8 mt-6">
   <CommentStats />
   <PlaybackTime />
+    <div class="space-y-4">
+    <ChatFilter />
+  </div>
 </div>
 
 <!-- <ChatVolumeChart /> -->
