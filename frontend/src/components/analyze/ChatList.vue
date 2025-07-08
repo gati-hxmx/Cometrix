@@ -3,12 +3,13 @@ import { computed, ref } from 'vue'
 import { useChatStore } from '@/stores/chat'
 
 const chat = useChatStore()
-const copiedIndex = ref(null) // どのチャットがコピーされたか
+const copiedIndex = ref(null)
 
 const RANGE = 20
+
 const visibleComments = computed(() => {
   const now = chat.currentTime
-  return chat.comments
+  return chat.filteredComments
     .filter(c => {
       const ts = Math.floor(c.timestamp)
       return ts >= now - RANGE && ts <= now
@@ -16,13 +17,10 @@ const visibleComments = computed(() => {
     .sort((a, b) => b.timestamp - a.timestamp)
 })
 
-// 📋 コピー処理
 async function copyText(text, index) {
   try {
     await navigator.clipboard.writeText(text)
     copiedIndex.value = index
-
-    // 1.5秒後にメッセージを非表示
     setTimeout(() => {
       if (copiedIndex.value === index) copiedIndex.value = null
     }, 1500)
@@ -31,6 +29,7 @@ async function copyText(text, index) {
   }
 }
 </script>
+
 
 <template>
   <div class="w-full h-full">

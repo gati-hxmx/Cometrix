@@ -12,6 +12,7 @@ export const useChatStore = defineStore('chat', {
     highlightedIndex: null,
     selectedTimestamp: null,
     currentTime: 0,
+    
         filters: {
       includeWords: [],
       excludeWords: [],
@@ -58,24 +59,29 @@ export const useChatStore = defineStore('chat', {
     },
 
     // ✅ フィルタ適用後の30秒ごとのチャット数
-    filteredVolumePer30s(state) {
-      const bins = {}
+// chat.js の getters 内 filteredVolumePer30s
+filteredVolumePer30s(state) {
+  const bins = {}
 
-      state.filteredComments.forEach(c => {
-        const sec = Math.floor(c.timestamp)
-        const bin = Math.floor(sec / 30) * 30
-        bins[bin] = (bins[bin] || 0) + 1
-      })
+  state.filteredComments.forEach(c => {
+    const sec = Math.floor(c.timestamp)
+    const bin = Math.floor(sec / 30) * 30
+    bins[bin] = (bins[bin] || 0) + 1
+  })
 
-      return Object.entries(bins)
-        .sort((a, b) => a[0] - b[0])
-        .map(([timestamp, count]) => ({
-          timestamp: Number(timestamp),
-          count
-        }))
-    }
+  return Object.entries(bins)
+    .sort((a, b) => a[0] - b[0])
+    .map(([timestamp, count]) => ({
+      timestamp: Number(timestamp),
+      count,
+      start_str: formatTime(Number(timestamp))  // ✅ 追加ここ
+    }))
+}
+
+
+
   },
-  
+
   actions: {
     // ✅ platform も受け取る
     async fetchChatData(platform, videoId) {
@@ -131,3 +137,11 @@ export const useChatStore = defineStore('chat', {
     }
   }
 })
+
+function formatTime(seconds) {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor(seconds % 60)
+  return [h, m, s].map(n => String(n).padStart(2, '0')).join(':')
+}
+
