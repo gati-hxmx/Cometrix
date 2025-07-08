@@ -1,13 +1,17 @@
 <script setup>
 import { useChatStore } from '@/stores/chat'
-import { watch, ref, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 
 const chat = useChatStore()
-const embedUrl = ref('')
-const baseTimestamp = ref(0)
+const player = ref(null)
 const timer = ref(null)
+const isPlaying = ref(false)
 
-// 秒→Twitchの time=1h2m3s形式
+function timeStrToSeconds(timeStr) {
+  const [h, m, s] = timeStr.split(':').map(Number)
+  return h * 3600 + m * 60 + s
+}
+
 function secondsToTwitchTime(sec) {
   const h = Math.floor(sec / 3600)
   const m = Math.floor((sec % 3600) / 60)
@@ -15,51 +19,86 @@ function secondsToTwitchTime(sec) {
   return `${h}h${m}m${s}s`
 }
 
-// "00:01:23" → 83秒
-function timeStrToSeconds(timeStr) {
-  const [h, m, s] = timeStr.split(':').map(Number)
-  return h * 3600 + m * 60 + s
+function loadTwitchScript() {
+  return new Promise((resolve, reject) => {
+    if (window.Twitch && window.Twitch.Player) {
+      resolve()
+    } else {
+      const script = document.createElement('script')
+      script.src = 'https://player.twitch.tv/js/embed/v1.js'
+      script.onload = resolve
+      script.onerror = reject
+      document.body.appendChild(script)
+    }
+  })
 }
 
-// 🎯 タイマー開始
-function startTimer(startSec) {
-  baseTimestamp.value = startSec
-  chat.setCurrentTime(startSec)
-
+function startTimer() {
   clearInterval(timer.value)
-  timer.value = setInterval(() => {
-    baseTimestamp.value += 1
-    chat.setCurrentTime(baseTimestamp.value)
+  timer.value = setInterval(async () => {
+    if (player.value && isPlaying.value) {
+      const current = await player.value.getCurrentTime()
+      chat.setCurrentTime(Math.floor(current))
+    }
   }, 1000)
 }
 
-// 🔁 selectedTimestamp に応じて再生とタイマー
+function stopTimer() {
+  clearInterval(timer.value)
+}
+
+// 🎯 初期表示でもプレイヤーを生成
+onMounted(async () => {
+  if (chat.platform === 'twitch' && chat.videoId) {
+    await loadTwitchScript()
+    await nextTick()
+
+    if (!player.value) {
+      const embed = new window.Twitch.Player("twitch-player", {
+        video: chat.videoId,
+        time: '0h0m0s',
+        autoplay: false,
+        parent: ["localhost"],
+        width: "100%",
+        height: "100%",
+      })
+
+      embed.addEventListener(window.Twitch.Player.READY, () => {
+        embed.setQuality('720p60')
+        embed.play()
+        startTimer()
+      })
+
+      embed.addEventListener(window.Twitch.Player.PLAY, () => {
+        isPlaying.value = true
+      })
+      embed.addEventListener(window.Twitch.Player.PAUSE, () => {
+        isPlaying.value = false
+      })
+
+      player.value = embed
+    }
+  }
+})
+
+// 🔁 selectedTimestamp が変化したときに seek
 watch(
   () => chat.selectedTimestamp,
-  (newTime) => {
-    if (chat.platform === 'twitch' && chat.videoId && newTime) {
-      const seconds = timeStrToSeconds(newTime)
-      const twitchTimeStr = secondsToTwitchTime(seconds)
-
-      embedUrl.value = `https://player.twitch.tv/?video=${chat.videoId}&time=${twitchTimeStr}&parent=localhost&autoplay=true`
-      startTimer(seconds)
+  async (newTime) => {
+    if (player.value && newTime) {
+      const sec = timeStrToSeconds(newTime)
+      player.value.seek(sec)
     }
-  },
-  { immediate: true }
+  }
 )
 
-// ⛔️ コンポーネント破棄時にタイマー停止
 onUnmounted(() => {
-  clearInterval(timer.value)
+  stopTimer()
 })
 </script>
 
 <template>
-  <iframe
-    :src="embedUrl"
-    frameborder="0"
-    allowfullscreen
-    width="100%"
-    height="100%"
-  ></iframe>
+  <div class="aspect-video w-full h-full">
+    <div id="twitch-player" class="w-full h-full rounded shadow" />
+  </div>
 </template>
