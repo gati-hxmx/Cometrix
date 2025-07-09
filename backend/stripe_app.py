@@ -1,12 +1,11 @@
 # stripe_app.py
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
-from services.stripe_service import create_checkout_session
-from flask import request
 import stripe
 import os
 from dotenv import load_dotenv
+from services.stripe_service import create_checkout_session
 from sqlalchemy_db import SessionLocal
 from models.user_model import User
 from models.subscription_model import Subscription
@@ -17,27 +16,20 @@ CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 print("[DEBUG] stripe_app.py loaded")
 
-# stripe_app.py の該当箇所
 @app.route("/create-checkout-session", methods=["POST"])
 def checkout():
     try:
         data = request.get_json()
         email = data.get("email")
-        if not email:
-            return jsonify({"error": "メールアドレスが必要です"}), 400
-
         session = create_checkout_session(email)
         return jsonify({"url": session.url})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-    
-
-
-
+# Stripe設定
 load_dotenv()
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")  # 念のためセット
-endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET")  # Webhook Secret
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
 
 def stripe_timestamp_to_datetime(ts):
     return datetime.utcfromtimestamp(ts)
@@ -50,26 +42,19 @@ def stripe_webhook():
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
     except stripe.error.SignatureVerificationError:
-        print("❌ Webhook signature invalid")
         return jsonify({"error": "Invalid signature"}), 400
 
-    print(f"📨 Received event: {event['type']}")
+    db = SessionLocal()
 
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
-        print("🔍 Session content:", session)
-
         email = session.get("customer_email")
-        print("📧 Extracted email:", email)
 
-        # このあとも try で囲って原因を isolation できるように
-        try:
-            db = SessionLocal()
-            user = db.query(User).filter_by(email=email).first()
-            if not user:
-                print("❌ No user found")
-                return jsonify({"error": "User not found"}), 404
+        if not email:
+            return jsonify({"error": "No email in session"}), 400
 
+        user = db.query(User).filter_by(email=email).first()
+        if user:
             sub = db.query(Subscription).filter_by(user_id=user.id).first()
             if not sub:
                 sub = Subscription(user_id=user.id)
@@ -79,13 +64,40 @@ def stripe_webhook():
             sub.status = "trialing"
             sub.start_date = stripe_timestamp_to_datetime(session["created"])
             sub.updated_at = datetime.utcnow()
-
             db.commit()
-            print(f"✅ Subscription updated for {email}")
+            print(f"✅ Trial subscription set for {email}")
+        else:
+            print(f"⚠️ No user found for email: {email}")
+
+    elif event["type"] == "invoice.payment_succeeded":
+        invoice = event["data"]["object"]
+        customer_id = invoice.get("customer")
+        print(f"[DEBUG] invoice.payment_succeeded triggered with customer_id: {customer_id}")
+
+        try:
+            customer = stripe.Customer.retrieve(customer_id)
+            email = customer.get("email")
+            print(f"[DEBUG] Retrieved email: {email}")
         except Exception as e:
-            print(f"🔥 Error updating subscription: {e}")
-            return jsonify({"error": str(e)}), 500
+            print("❌ Failed to fetch customer:", e)
+            return jsonify({"error": "Failed to retrieve customer"}), 400
 
-    return jsonify({"status": "ok"})
+        if not email:
+            print("❌ Email is empty")
+            return jsonify({"error": "No email in customer"}), 400
 
+        user = db.query(User).filter_by(email=email).first()
+        if user:
+            sub = db.query(Subscription).filter_by(user_id=user.id).first()
+            if sub:
+                sub.status = "active"
+                sub.updated_at = datetime.utcnow()
+                db.commit()
+                print(f"✅ Subscription renewed for user: {email}")
+            else:
+                print(f"⚠️ No subscription found for user: {email}")
+        else:
+            print(f"⚠️ No user found for email: {email}")
+
+        return jsonify({"status": "ok"})  # ✅ これを忘れずに
 
