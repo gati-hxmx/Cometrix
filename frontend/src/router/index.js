@@ -8,20 +8,24 @@ import MypageView from '../views/MypageView.vue'
 import TestChart from '../views/TestChart.vue'
 import Leagal from '../views/Leagal.vue'
 import PrivacyPolicy from '@/views/PrivacyPolicy.vue'
+import BillingSuccess from '@/views/billing/BillingSuccess.vue'
+import BillingCancel from '@/views/billing/BillingCancel.vue'
+
 
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
   { path: '/login', name: 'Login', component: LoginView },
   { path: '/about', name: 'About', component: AboutView },
-  { path: '/analyze',name: 'Analyze', component: AnalyzeView},
-  { path: '/mypage', name: 'Maypage', component: MypageView },
+  { path: '/analyze', name: 'Analyze', component: AnalyzeView },
+  { path: '/mypage', name: 'Mypage', component: MypageView },
   { path: '/test', name: 'TestChart', component: TestChart },
   { path: '/leagal', name: 'Leagal', component: Leagal },
-  { path: '/privacypolicy', name: 'PrivacyPolicy', component: PrivacyPolicy }
-  
-  
-  // /homeを削除し、/に統一
+  { path: '/privacypolicy', name: 'PrivacyPolicy', component: PrivacyPolicy },  // ← カンマ追加
+{ path: '/billingsuccess', name: 'BillingSuccess', component: BillingSuccess },
+{ path: '/billingcancel', name: 'BillingCancel', component: BillingCancel },
+
 ]
+
 
 const router = createRouter({
   history: createWebHistory(),

@@ -1,18 +1,37 @@
 <script setup>
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import { useUserStore } from '@/stores/user'
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 
 const userStore = useUserStore()
-
-// userStore.user が null でない場合のみ name, email にアクセス
 const name = computed(() => userStore.name)
 const email = computed(() => userStore.email)
 
-const subscription = {
+// ← ココを ref にする（リアルタイム更新用）
+const subscription = ref({
   plan: 'Free Plan',
-  status: '未加入'
-}
+  status: '読み込み中...'
+})
+
+// ✅ onMountedでサブスク情報をサーバーから取得
+onMounted(async () => {
+  try {
+    const res = await fetch('http://localhost:5001/api/subscription', {
+      credentials: 'include'
+    })
+    const data = await res.json()
+    subscription.value = {
+      plan: data.plan,
+      status: data.status
+    }
+  } catch (err) {
+    console.error('取得エラー', err)
+    subscription.value = {
+      plan: 'Free Plan',
+      status: '取得失敗'
+    }
+  }
+})
 
 async function handleUpgrade() {
   try {
@@ -22,7 +41,7 @@ async function handleUpgrade() {
     })
     const data = await res.json()
     if (data.url) {
-      window.location.href = data.url  // ← Stripe Checkout に遷移
+      window.location.href = data.url
     } else {
       alert("セッションURLが取得できませんでした")
     }
@@ -32,6 +51,7 @@ async function handleUpgrade() {
   }
 }
 </script>
+
 
 <template>
   <DefaultLayout>

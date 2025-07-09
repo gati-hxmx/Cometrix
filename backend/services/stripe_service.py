@@ -10,13 +10,17 @@ print("[DEBUG] Stripe API key is set to:", stripe.api_key)
 
 # 実際にCheckoutセッションを作る処理
 def create_checkout_session():
-    return stripe.checkout.Session.create(
-        mode="subscription",
-        payment_method_types=["card"],
+    session = stripe.checkout.Session.create(
+        mode='subscription',
         line_items=[{
-            "price": "price_1Rfo5eRsRvEmgDyKvpEbkWuj",  # あなたの Price ID に置き換え！
-            "quantity": 1,
+            'price': 'price_1Rfo5eRsRvEmgDyKvpEbkWuj',  # ←ダッシュボードで取得した price ID
+            'quantity': 1,
         }],
-        success_url="http://localhost:5173/mypage?success=true",
-        cancel_url="http://localhost:5173/mypage?canceled=true",
+        subscription_data={
+            'trial_period_days': 30  # ✅ ここがポイント！
+        },
+        success_url='http://localhost:5173/billingsuccess',
+        cancel_url='http://localhost:5173/billingcancel',
     )
+    return session
+

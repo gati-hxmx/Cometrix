@@ -66,7 +66,7 @@ function splitInput(text) {
     <!-- ✅ 詳細設定：上方向に浮かせて表示 -->
     <div
       v-if="showAdvanced"
-      class="absolute bottom-full left-0 w-full p-4 bg-white border rounded shadow z-10 space-y-3"
+      class="absolute top-full left-0 w-full p-4 bg-white border rounded shadow z-10 space-y-3"
     >
       <div>
         <label class="block text-sm font-medium">除外したいワード</label>
