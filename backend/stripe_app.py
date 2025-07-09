@@ -17,13 +17,20 @@ CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 print("[DEBUG] stripe_app.py loaded")
 
+# stripe_app.py の該当箇所
 @app.route("/create-checkout-session", methods=["POST"])
 def checkout():
     try:
-        session = create_checkout_session()
+        data = request.get_json()
+        email = data.get("email")
+        if not email:
+            return jsonify({"error": "メールアドレスが必要です"}), 400
+
+        session = create_checkout_session(email)
         return jsonify({"url": session.url})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
     
 
 
@@ -41,24 +48,28 @@ def stripe_webhook():
     sig_header = request.headers.get("stripe-signature")
 
     try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, endpoint_secret
-        )
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
     except stripe.error.SignatureVerificationError:
+        print("❌ Webhook signature invalid")
         return jsonify({"error": "Invalid signature"}), 400
 
-    db = SessionLocal()
+    print(f"📨 Received event: {event['type']}")
 
-    # ✅ checkout完了イベント
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
+        print("🔍 Session content:", session)
+
         email = session.get("customer_email")
+        print("📧 Extracted email:", email)
 
-        if not email:
-            return jsonify({"error": "No email in session"}), 400
+        # このあとも try で囲って原因を isolation できるように
+        try:
+            db = SessionLocal()
+            user = db.query(User).filter_by(email=email).first()
+            if not user:
+                print("❌ No user found")
+                return jsonify({"error": "User not found"}), 404
 
-        user = db.query(User).filter_by(email=email).first()
-        if user:
             sub = db.query(Subscription).filter_by(user_id=user.id).first()
             if not sub:
                 sub = Subscription(user_id=user.id)
@@ -68,10 +79,13 @@ def stripe_webhook():
             sub.status = "trialing"
             sub.start_date = stripe_timestamp_to_datetime(session["created"])
             sub.updated_at = datetime.utcnow()
+
             db.commit()
-            print(f"✅ Subscription updated for user: {email}")
-        else:
-            print(f"⚠️ No user found for email: {email}")
+            print(f"✅ Subscription updated for {email}")
+        except Exception as e:
+            print(f"🔥 Error updating subscription: {e}")
+            return jsonify({"error": str(e)}), 500
 
     return jsonify({"status": "ok"})
+
 

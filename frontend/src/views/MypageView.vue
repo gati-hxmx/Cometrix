@@ -37,7 +37,11 @@ async function handleUpgrade() {
   try {
     const res = await fetch("http://localhost:5001/create-checkout-session", {
       method: "POST",
-      credentials: "include"
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email: email.value })  // ← メール送信！
     })
     const data = await res.json()
     if (data.url) {
