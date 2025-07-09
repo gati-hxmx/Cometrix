@@ -1,35 +1,17 @@
 <script setup>
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import { useUserStore } from '@/stores/user'
-import { computed, ref, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 
 const userStore = useUserStore()
+
 const name = computed(() => userStore.name)
 const email = computed(() => userStore.email)
+const subscription = computed(() => userStore.subscription)
 
-// ← ココを ref にする（リアルタイム更新用）
-const subscription = ref({
-  plan: 'Free Plan',
-  status: '読み込み中...'
-})
-
-// ✅ onMountedでサブスク情報をサーバーから取得
 onMounted(async () => {
-  try {
-    const res = await fetch('http://localhost:5001/api/subscription', {
-      credentials: 'include'
-    })
-    const data = await res.json()
-    subscription.value = {
-      plan: data.plan,
-      status: data.status
-    }
-  } catch (err) {
-    console.error('取得エラー', err)
-    subscription.value = {
-      plan: 'Free Plan',
-      status: '取得失敗'
-    }
+  if (email.value) {
+    await userStore.fetchSubscription()
   }
 })
 
@@ -41,7 +23,7 @@ async function handleUpgrade() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ email: email.value })  // ← メール送信！
+      body: JSON.stringify({ email: email.value })
     })
     const data = await res.json()
     if (data.url) {
@@ -54,8 +36,29 @@ async function handleUpgrade() {
     alert("通信エラーが発生しました")
   }
 }
-</script>
 
+async function handleCancel() {
+  if (!confirm("本当に解約しますか？")) return
+
+  try {
+    const res = await fetch("http://localhost:5001/cancel-subscription", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email: email.value })
+    })
+    const data = await res.json()
+    alert(data.message || "キャンセル処理を完了しました")
+
+    await userStore.fetchSubscription()
+  } catch (error) {
+    console.error("キャンセルエラー:", error)
+    alert("通信エラーが発生しました")
+  }
+}
+</script>
 
 <template>
   <DefaultLayout>
@@ -66,7 +69,6 @@ async function handleUpgrade() {
         <h2 class="font-semibold text-gray-700 mb-2">ユーザー情報</h2>
 
         <div v-if="name" class="flex items-center gap-4">
-          <!-- <img :src="userStore.picture" class="w-12 h-12 rounded-full" alt="User Icon" /> -->
           <div>
             <p class="font-medium">{{ name }}</p>
             <p class="text-sm text-gray-500">{{ email }}</p>
@@ -74,23 +76,39 @@ async function handleUpgrade() {
         </div>
 
         <div v-else class="text-gray-400 text-sm">ユーザー情報が取得できませんでした</div>
-
       </div>
 
       <div class="bg-white border rounded p-4 shadow-sm">
         <h2 class="font-semibold text-gray-700 mb-2">サブスクリプション</h2>
 
-        <p class="mb-1">プラン: <strong>{{ subscription.plan }}</strong></p>
-        <p class="text-sm text-gray-500 mb-4">状態: {{ subscription.status }}</p>
+        <div v-if="subscription">
+          <p class="mb-1">プラン: <strong>{{ subscription.plan }}</strong></p>
+          <p class="text-sm text-gray-500 mb-4">状態: {{ subscription.status }}</p>
 
-        <button
-          @click="handleUpgrade"
-          class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded"
-        >
-          アップグレードする
-        </button>
+          <button
+            v-if="subscription.status !== 'active'"
+            @click="handleUpgrade"
+            class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded mr-2"
+          >
+            アップグレードする
+          </button>
+
+          <button
+            v-if="subscription.status === 'active' || subscription.status === 'trialing'"
+            @click="handleCancel"
+            class="bg-gray-600 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded"
+          >
+            解約する
+          </button>
+
+          <p v-if="subscription.status === 'canceled'" class="text-sm text-red-500">
+            解約済み（{{ subscription.end_date }}まで利用可能）
+          </p>
+
+        </div>
+
+        <div v-else class="text-sm text-gray-500">サブスクリプション情報を取得中...</div>
       </div>
-
     </main>
   </DefaultLayout>
 </template>

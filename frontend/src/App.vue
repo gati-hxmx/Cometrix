@@ -10,8 +10,11 @@ const userStore = useUserStore()
 function logout() {
   userStore.clearUser()
 }
-onMounted(() => {
-  userStore.fetchUser()  // ✅ ログイン済みならここで状態が復元される
+onMounted(async () => {
+  await userStore.fetchUser()           // ① ログイン状態の復元
+  if (userStore.email) {
+    await userStore.fetchSubscription() // ② サブスク状態の復元
+  }
 })
 
 </script>

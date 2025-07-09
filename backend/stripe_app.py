@@ -70,34 +70,141 @@ def stripe_webhook():
             print(f"⚠️ No user found for email: {email}")
 
     elif event["type"] == "invoice.payment_succeeded":
-        invoice = event["data"]["object"]
-        customer_id = invoice.get("customer")
-        print(f"[DEBUG] invoice.payment_succeeded triggered with customer_id: {customer_id}")
+        invoice      = event["data"]["object"]
+        invoice_id   = invoice.get("id")
+        customer_id  = invoice.get("customer")
+        print(f"[DEBUG] event hit → invoice_id={invoice_id}")
+
+        # ---------- ① まず customer.email を取得 ----------
+        try:
+            customer = stripe.Customer.retrieve(customer_id)
+            email    = customer.get("email")
+            print(f"[DEBUG] customer email = {email}")
+        except Exception as e:
+            print("❌ customer 取得失敗:", e)
+            return jsonify({"error": "customer fetch failed"}), 400
+
+        if not email:
+            return jsonify({"error": "no email"}), 400
+
+        # ---------- ② user / sub を必ず取得 ----------
+        user = db.query(User).filter_by(email=email).first()
+        if not user:
+            print("⚠️ user 不在 → スキップ")
+            return jsonify({"status": "ignored"}), 200
+
+        sub  = db.query(Subscription).filter_by(user_id=user.id).first()
+        if not sub:
+            print("⚠️ sub 不在 → スキップ")
+            return jsonify({"status": "ignored"}), 200
+
+        # ---------- ③ ここから安全に更新 ----------
+        sub.status     = "active"
+        sub.updated_at = datetime.utcnow()
+
+        try:
+            full_invoice = stripe.Invoice.retrieve(invoice_id, expand=["lines"])
+            lines = full_invoice["lines"]["data"]
+            period_end = lines[0]["period"]["end"] if lines else None
+            print(f"[DEBUG] period_end raw = {period_end}")
+
+            if not period_end:
+                period_end = invoice.get("current_period_end") or invoice.get("period_end")
+                print(f"[DEBUG] fallback period_end = {period_end}")
+
+            if period_end:
+                sub.end_date = stripe_timestamp_to_datetime(period_end)
+                print(f"[DEBUG] sub.end_date set → {sub.end_date.isoformat()}")
+            else:
+                print("⚠️ period_end が取得できませんでした")
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            print("⚠️ end_date 設定失敗:", e)
+
+        print(f"[DEBUG] commit 前 end_date = {sub.end_date}")
+        db.commit()
+        print("✅ invoice.payment_succeeded → DB 更新完了")
+
+        return jsonify({"status": "ok"})
+    
+    elif event["type"] == "customer.subscription.deleted":
+        subscription_obj = event["data"]["object"]
+        customer_id = subscription_obj.get("customer")
+        canceled_at = subscription_obj.get("canceled_at")  # timestamp
+        print(f"[DEBUG] customer.subscription.deleted: customer={customer_id}, canceled_at={canceled_at}")
 
         try:
             customer = stripe.Customer.retrieve(customer_id)
             email = customer.get("email")
-            print(f"[DEBUG] Retrieved email: {email}")
+            print(f"[DEBUG] Retrieved customer email: {email}")
         except Exception as e:
-            print("❌ Failed to fetch customer:", e)
+            print("❌ Failed to retrieve customer:", e)
             return jsonify({"error": "Failed to retrieve customer"}), 400
 
         if not email:
-            print("❌ Email is empty")
-            return jsonify({"error": "No email in customer"}), 400
+            return jsonify({"error": "No email in customer object"}), 400
 
         user = db.query(User).filter_by(email=email).first()
-        if user:
-            sub = db.query(Subscription).filter_by(user_id=user.id).first()
-            if sub:
-                sub.status = "active"
-                sub.updated_at = datetime.utcnow()
-                db.commit()
-                print(f"✅ Subscription renewed for user: {email}")
-            else:
-                print(f"⚠️ No subscription found for user: {email}")
-        else:
-            print(f"⚠️ No user found for email: {email}")
+        if not user:
+            print("⚠️ No user found for email:", email)
+            return jsonify({"status": "ignored"}), 200
 
-        return jsonify({"status": "ok"})  # ✅ これを忘れずに
+        sub = db.query(Subscription).filter_by(user_id=user.id).first()
+        if not sub:
+            print("⚠️ No subscription found for user:", email)
+            return jsonify({"status": "ignored"}), 200
+
+        sub.status = "canceled"
+        if canceled_at:
+            sub.end_date = stripe_timestamp_to_datetime(canceled_at)
+        sub.updated_at = datetime.utcnow()
+        db.commit()
+
+        print(f"✅ Subscription canceled in DB for user: {email}")
+        return jsonify({"status": "ok"})
+
+
+
+    # ✅ 追加：どのイベントにも一致しない場合のレスポンス
+    return jsonify({"status": "ignored"})
+
+
+@app.route("/cancel-subscription", methods=["POST"])
+def cancel_subscription():
+    try:
+        data = request.get_json()
+        email = data.get("email")
+
+        db = SessionLocal()
+        user = db.query(User).filter_by(email=email).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        sub = db.query(Subscription).filter_by(user_id=user.id).first()
+        if not sub or sub.status != "active":
+            return jsonify({"error": "No active subscription found"}), 400
+
+        # Stripe customer ID を email から取得
+        stripe_customers = stripe.Customer.list(email=email).data
+        if not stripe_customers:
+            return jsonify({"error": "Customer not found in Stripe"}), 404
+
+        stripe_customer_id = stripe_customers[0]["id"]
+        stripe_subscriptions = stripe.Subscription.list(customer=stripe_customer_id).data
+        if not stripe_subscriptions:
+            return jsonify({"error": "No active Stripe subscriptions"}), 404
+
+        stripe_subscription_id = stripe_subscriptions[0]["id"]
+
+        # Stripe上のsubscriptionをキャンセル（即時 or period終了時）
+        stripe.Subscription.delete(stripe_subscription_id)
+
+        print(f"✅ Stripe subscription {stripe_subscription_id} canceled for {email}")
+
+        return jsonify({"status": "canceled"}), 200
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 

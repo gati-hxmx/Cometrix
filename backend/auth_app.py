@@ -13,6 +13,8 @@ from flask import jsonify
 from flask_login import current_user
 from db_logic import get_user_db_id
 from datetime import datetime
+from sqlalchemy_db import SessionLocal
+from models.subscription_model import Subscription
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -98,29 +100,31 @@ def logout():
 # CORS
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
+from flask_login import current_user
+
+
 @app.route("/api/subscription")
 def get_subscription():
     if not current_user.is_authenticated:
         return jsonify({'error': 'unauthorized'}), 401
 
     try:
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute("SELECT plan, status FROM subscriptions WHERE user_id = %s ORDER BY id DESC LIMIT 1", (current_user.db_id,))
-        result = cur.fetchone()
-        cur.close()
-        conn.close()
+        db = SessionLocal()
+        sub = db.query(Subscription).filter_by(user_id=current_user.db_id).order_by(Subscription.id.desc()).first()
+        db.close()
 
-        if result:
+        if sub:
             return jsonify({
-                'plan': result[0],
-                'status': result[1]
+                'plan': sub.plan,
+                'status': sub.status
             })
         else:
-            return jsonify({'plan': 'free', 'status': 'inactive'})  # ← デフォルト
+            return jsonify({'plan': 'free', 'status': 'inactive'})  # デフォルト
     except Exception as e:
         print('🟥 サブスクリプション取得失敗:', e)
         return jsonify({'error': 'internal_error'}), 500
+
+
 
 
 
