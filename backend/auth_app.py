@@ -1,5 +1,5 @@
 # auth_app.py
-from flask import Flask, redirect, url_for, jsonify
+from flask import Flask, redirect, url_for, jsonify,request
 from flask_login import LoginManager, login_user, logout_user, current_user
 from flask_dance.contrib.google import google
 from config import Config
@@ -15,6 +15,8 @@ from db_logic import get_user_db_id
 from datetime import datetime
 from sqlalchemy_db import SessionLocal
 from models.subscription_model import Subscription
+from models.analysis_log_model import AnalysisLog  # 追加
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -124,6 +126,42 @@ def get_subscription():
     except Exception as e:
         print('🟥 サブスクリプション取得失敗:', e)
         return jsonify({'error': 'internal_error'}), 500
+    
+
+@app.route("/api/analysis-log", methods=["POST"])
+def save_analysis_log():
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'unauthorized'}), 401
+
+    try:
+        data = request.get_json()
+        required_fields = ["video_url", "video_title", "platform", "duration_sec", "comment_count", "result_path"]
+
+        if not all(data.get(f) for f in required_fields):
+            return jsonify({"error": "Missing fields"}), 400
+
+        db = SessionLocal()
+        log = AnalysisLog(
+            user_id=current_user.db_id,
+            video_url=data["video_url"],
+            video_title=data["video_title"],
+            platform=data["platform"],
+            duration_sec=data["duration_sec"],
+            comment_count=data["comment_count"],
+            result_path=data["result_path"],
+            analyzed_at=datetime.utcnow()
+        )
+        db.add(log)
+        db.commit()
+        db.close()
+
+        print(f"✅ 分析ログ保存完了: {data['video_title']}")
+        return jsonify({"status": "ok"}), 200
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 
 
 
