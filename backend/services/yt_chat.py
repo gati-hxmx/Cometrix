@@ -7,12 +7,43 @@ import json
 from datetime import timedelta
 from typing import List, Dict
 from collections import defaultdict
+from services.log_service import save_analysis_log
+import models
 
 def fetch_chat_data(video_id: str) -> Dict:
+    from subprocess import check_output
+
+    video_url = f"https://www.youtube.com/watch?v={video_id}"
+    thumbnail_url = f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
+
+
+    # ✅ メタ情報（タイトル・再生時間）を取得
+    try:
+        title = check_output(
+            ["yt-dlp", "--get-title", video_url],
+            text=True
+        ).strip()
+
+        duration_str = check_output(
+            ["yt-dlp", "--get-duration", video_url],
+            text=True
+        ).strip()
+
+        # 再生時間を秒に変換（hh:mm:ss）
+        hms = [int(p) for p in duration_str.split(":")]
+        while len(hms) < 3:
+            hms.insert(0, 0)  # mm:ss形式だったらhh=0を追加
+        h, m, s = hms
+        duration_sec = h * 3600 + m * 60 + s
+    except Exception as e:
+        print("🟥 メタ情報取得失敗:", e)
+        title = ""
+        duration_sec = 0
+
     with tempfile.TemporaryDirectory() as tmpdir:
         command = [
             "yt-dlp",
-            f"https://www.youtube.com/watch?v={video_id}",
+            video_url,
             "--skip-download",
             "--write-subs",
             "--sub-langs", "live_chat",
@@ -71,15 +102,33 @@ def fetch_chat_data(video_id: str) -> Dict:
         with open(save_path, "w", encoding="utf-8") as f_out:
             json.dump({
                 "videoId": video_id,
+                "title": title,
+                "duration_sec": duration_sec,
                 "comments": comments,
                 "volume_per_30s": volume_per_30s
             }, f_out, ensure_ascii=False, indent=2)
 
+        # ✅ 分析ログを保存
+        save_analysis_log(
+            user_id=999,
+            video_url=video_url,
+            video_title=title,
+            platform="youtube",
+            duration_sec=duration_sec,
+            comment_count=len(comments),
+            result_path=save_path
+        )
+
         return {
             "videoId": video_id,
+            "video_url": video_url,
+            "title": title,
+            "duration_sec": duration_sec,
+            "thumbnail_url": thumbnail_url,
             "comments": comments,
             "volume_per_30s": volume_per_30s
         }
+
 
 def format_hhmmss(seconds: int) -> str:
     td = timedelta(seconds=seconds)

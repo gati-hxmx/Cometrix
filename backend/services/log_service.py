@@ -4,6 +4,7 @@ from models.analysis_log_model import AnalysisLog
 from sqlalchemy_db import SessionLocal
 from datetime import datetime
 
+
 def save_analysis_log(user_id, video_url, video_title, platform, duration_sec,
                       comment_count, result_path, success=True, error_message=None):
     db = SessionLocal()
