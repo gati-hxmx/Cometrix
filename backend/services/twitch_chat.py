@@ -3,6 +3,8 @@ from datetime import timedelta
 from typing import List, Dict
 from collections import defaultdict
 import os  # ファイル保存のため
+from services.log_service import save_analysis_log 
+import models
 
 def fetch_chat_data(json_path: str, video_id: str) -> Dict:
     comments = []
@@ -42,7 +44,25 @@ def fetch_chat_data(json_path: str, video_id: str) -> Dict:
             "volume_per_30s": volume_per_30s
         }, f_out, ensure_ascii=False, indent=2)
 
+    # ✅ 分析ログを保存
+    duration_sec = int(max(c["timestamp"] for c in comments)) if comments else 0
+    video_url = f"https://www.twitch.tv/videos/{video_id}"
+
+    save_analysis_log(
+        user_id=999,
+        video_url=video_url,
+        video_title="",  # メタ取得しない場合は空文字
+        platform="twitch",
+        duration_sec=duration_sec,
+        comment_count=len(comments),
+        result_path=save_path
+    )
+
     return {
+        "videoId": video_id,
+        "video_url": video_url,
+        "title": "",  # 任意でメタ情報取得も可能
+        "duration_sec": duration_sec,
         "comments": comments,
         "volume_per_30s": volume_per_30s
     }
