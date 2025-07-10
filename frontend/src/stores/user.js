@@ -26,12 +26,14 @@ export const useUserStore = defineStore('user', {
         const res = await axios.get('http://localhost:5000/api/subscription', {
           withCredentials: true
         })
-        this.subscription = res.data  // 例: { plan: 'free', status: 'active' }
+        console.log('📦 subscription fetched:', res.data)  // ← 追加
+        this.subscription = res.data
       } catch (e) {
         console.error('サブスクリプション情報の取得に失敗しました', e)
         this.subscription = null
       }
-    },
+    }
+,
     async logout() {
       try {
         await axios.get('http://localhost:5000/logout', {

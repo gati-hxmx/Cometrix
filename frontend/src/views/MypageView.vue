@@ -1,7 +1,7 @@
 <script setup>
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import { useUserStore } from '@/stores/user'
-import { computed, onMounted } from 'vue'
+import { computed, watchEffect } from 'vue'
 
 const userStore = useUserStore()
 
@@ -9,11 +9,20 @@ const name = computed(() => userStore.name)
 const email = computed(() => userStore.email)
 const subscription = computed(() => userStore.subscription)
 
-onMounted(async () => {
+watchEffect(async () => {
   if (email.value) {
     await userStore.fetchSubscription()
   }
 })
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
+}
 
 async function handleUpgrade() {
   try {
@@ -101,10 +110,13 @@ async function handleCancel() {
             解約する
           </button>
 
-          <p v-if="subscription.status === 'canceled'" class="text-sm text-red-500">
-            解約済み（{{ subscription.end_date }}まで利用可能）
+          <p v-if="subscription.status === 'canceling'" class="text-sm text-orange-500">
+            解約予定（{{ formatDate(subscription.end_date) }}まで利用可能）
           </p>
 
+          <p v-if="subscription.status === 'canceled'" class="text-sm text-red-500">
+            解約済み（{{ formatDate(subscription.end_date) }}まで利用可能）
+          </p>
         </div>
 
         <div v-else class="text-sm text-gray-500">サブスクリプション情報を取得中...</div>

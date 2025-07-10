@@ -181,8 +181,9 @@ def cancel_subscription():
             return jsonify({"error": "User not found"}), 404
 
         sub = db.query(Subscription).filter_by(user_id=user.id).first()
-        if not sub or sub.status != "active":
-            return jsonify({"error": "No active subscription found"}), 400
+        if not sub or sub.status not in ["active", "trialing"]:
+            return jsonify({"error": "No valid subscription found"}), 400
+
 
         # Stripe customer ID を email から取得
         stripe_customers = stripe.Customer.list(email=email).data
@@ -196,15 +197,22 @@ def cancel_subscription():
 
         stripe_subscription_id = stripe_subscriptions[0]["id"]
 
-        # Stripe上のsubscriptionをキャンセル（即時 or period終了時）
-        stripe.Subscription.delete(stripe_subscription_id)
+        # ✅ Stripe上の subscription を解約予約に変更
+        stripe.Subscription.modify(
+            stripe_subscription_id,
+            cancel_at_period_end=True
+        )
 
-        print(f"✅ Stripe subscription {stripe_subscription_id} canceled for {email}")
+        # ✅ 自前DBの status を 'canceling' に更新
+        sub.status = "canceling"
+        db.commit()
 
-        return jsonify({"status": "canceled"}), 200
+        print(f"📆 解約予約完了: {email}, subscription={stripe_subscription_id}")
+        return jsonify({"status": "canceling"}), 200
 
     except Exception as e:
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
 
 
