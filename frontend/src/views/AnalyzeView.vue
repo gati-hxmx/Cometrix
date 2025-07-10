@@ -8,13 +8,14 @@ import ChatList from '@/components/analyze/ChatList.vue'
 import ChatVolumeChart from '@/components/analyze/ChatVolumeChart.vue'
 import LoadingOverlay from '@/components/analyze/common/LoadingOverlay.vue';
 // AnalyzeView.vue の <script setup> の冒頭に以下を追加
-import { ref } from 'vue'
 import TestChart from './TestChart.vue';
 import TwitchPlayer from '@/components/analyze/TwitchPlayer.vue'
 import CommentStats from '@/components/analyze/CommentStats.vue'
 import PlaybackTime from '@/components/analyze/PlaybackTime.vue'
 import MemoEditor from '@/components/analyze/MemoEditor.vue'
 import ChatFilter from '@/components/analyze/ChatFilter.vue'
+import { useUserStore } from '@/stores/user'
+import { computed, ref, onMounted } from 'vue'
 // import ChatChart from '@/components/ChatChart.vue'
 
 
@@ -23,6 +24,10 @@ const tabs = ['チャット', '字幕', 'メモ']
 const activeTab = ref('チャット')
 
 const chat = useChatStore()
+
+// サブスク状態チェック用
+const userStore = useUserStore()
+const subscription = computed(() => userStore.subscription)
 
 const handleVideoIdSubmit = ({ platform, videoId }) => {
   chat.fetchChatData(platform, videoId)
@@ -44,7 +49,21 @@ function startAnalysis() {
 <template>
   <DefaultLayout>
   <main class="p-8">
-    <VideoUrlInput @submit="handleVideoIdSubmit" />
+
+          <!-- ✅ ガード：未契約状態なら警告だけ表示 -->
+      <div v-if="!subscription || ['inactive', 'canceled'].includes(subscription.status)" class="text-center text-gray-600">
+        <p class="text-xl font-semibold mb-2">ご利用にはサブスクリプション契約が必要です</p>
+        <router-link to="/mypage" class="text-blue-600 hover:underline">マイページから契約してください</router-link>
+      </div>
+
+            <!-- ✅ 契約中ユーザー向けの分析画面 -->
+      <div v-else>
+        <!-- 🎥 動画URL入力と分析UI -->
+        <VideoUrlInput @submit="handleVideoIdSubmit" />
+        <!-- ... 以下すべて既存の分析UIを内包する -->
+        <!-- 既存の動画プレイヤー / チャットタブ / グラフ / 統計など -->
+        <!-- ※ここは既存の分析UIをそのまま入れてOK -->
+
 <!-- 横並び -->
 <div class="mt-6 flex gap-4 items-start">
   <!-- 左：動画 -->
@@ -105,6 +124,8 @@ function startAnalysis() {
       <p>取得した動画ID: <strong>{{ videoId }}</strong></p>
       <!-- 次ステップへ進める -->
     </div>
+
+  </div>
   </main>
   <LoadingOverlay v-if="isLoading" />
  
