@@ -9,7 +9,9 @@ export const useUserStore = defineStore('user', {
     email: null,
     subscription: null,  // ← 追加！
   }),
-  persist: true,
+    persist: {
+    paths: ['name', 'email']  // 👈 subscriptionは保持しない
+  },
   actions: {
     async fetchUser() {
       try {
