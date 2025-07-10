@@ -116,7 +116,8 @@ def get_subscription():
         if sub:
             return jsonify({
                 'plan': sub.plan,
-                'status': sub.status
+                'status': sub.status,
+                'end_date': sub.end_date.isoformat() if sub.end_date else None,
             })
         else:
             return jsonify({'plan': 'free', 'status': 'inactive'})  # デフォルト

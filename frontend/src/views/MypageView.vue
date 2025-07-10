@@ -67,6 +67,29 @@ async function handleCancel() {
     alert("通信エラーが発生しました")
   }
 }
+
+async function handleUncancel() {
+  if (!confirm("解約をキャンセルしますか？")) return
+
+  try {
+    const res = await fetch("http://localhost:5001/uncancel-subscription", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email: email.value })
+    })
+    const data = await res.json()
+    alert(data.message || "解約キャンセル処理を完了しました")
+
+    await userStore.fetchSubscription()
+  } catch (error) {
+    console.error("解約キャンセルエラー:", error)
+    alert("通信エラーが発生しました")
+  }
+}
+
 </script>
 
 <template>
@@ -95,7 +118,7 @@ async function handleCancel() {
           <p class="text-sm text-gray-500 mb-4">状態: {{ subscription.status }}</p>
 
           <button
-            v-if="subscription.status !== 'active'"
+            v-if="subscription.status !== 'active' && subscription.status !== 'canceling'"
             @click="handleUpgrade"
             class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded mr-2"
           >
@@ -113,6 +136,17 @@ async function handleCancel() {
           <p v-if="subscription.status === 'canceling'" class="text-sm text-orange-500">
             解約予定（{{ formatDate(subscription.end_date) }}まで利用可能）
           </p>
+
+          <button
+            v-if="subscription.status === 'canceling'"
+            @click="handleUncancel"
+            class="bg-gray-600 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded"
+          >
+            解約をキャンセルする
+          </button>
+
+
+
 
           <p v-if="subscription.status === 'canceled'" class="text-sm text-red-500">
             解約済み（{{ formatDate(subscription.end_date) }}まで利用可能）

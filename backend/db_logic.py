@@ -70,7 +70,7 @@ def get_active_subscription(user_id):
         cur.execute("""
             SELECT plan, status, start_date, end_date
             FROM subscriptions
-            WHERE user_id = %s AND status = 'active'
+            WHERE user_id = %s
             ORDER BY start_date DESC
             LIMIT 1;
         """, (user_id,))

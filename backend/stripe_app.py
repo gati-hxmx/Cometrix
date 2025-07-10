@@ -213,6 +213,53 @@ def cancel_subscription():
     except Exception as e:
         import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+    
+
+
+@app.route("/uncancel-subscription", methods=["POST"])
+def uncancel_subscription():
+    try:
+        data = request.get_json()
+        email = data.get("email")
+
+        db = SessionLocal()
+        user = db.query(User).filter_by(email=email).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        sub = db.query(Subscription).filter_by(user_id=user.id).first()
+        if not sub or sub.status != "canceling":
+            return jsonify({"error": "No canceling subscription found"}), 400
+
+        # StripeのCustomerを取得
+        stripe_customers = stripe.Customer.list(email=email).data
+        if not stripe_customers:
+            return jsonify({"error": "Customer not found in Stripe"}), 404
+
+        stripe_customer_id = stripe_customers[0]["id"]
+        stripe_subscriptions = stripe.Subscription.list(customer=stripe_customer_id).data
+        if not stripe_subscriptions:
+            return jsonify({"error": "No active Stripe subscriptions"}), 404
+
+        stripe_subscription_id = stripe_subscriptions[0]["id"]
+
+        # Stripe上のキャンセル予約を取り消す
+        stripe.Subscription.modify(
+            stripe_subscription_id,
+            cancel_at_period_end=False
+        )
+
+        # 自前DBのステータスも復帰させる
+        sub.status = "active"
+        db.commit()
+
+        print(f"♻️ 解約キャンセル成功: {email}, subscription={stripe_subscription_id}")
+        return jsonify({"status": "uncanceled"}), 200
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 
 
 
