@@ -8,7 +8,7 @@
           <!-- ハンバーガーメニュー -->
           <button
             v-if="isLoggedIn"
-            @click="toggleMenu"
+            @click.stop="toggleMenu"  
             class="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded p-1"
           >
             <Menu class="w-6 h-6" />
@@ -50,8 +50,10 @@
     <transition name="slide">
       <aside
         v-if="menuOpen && isLoggedIn"
+        ref="sidebarRef"
         class="fixed top-16 left-0 h-full w-55 bg-white shadow-md z-40 border-r border-gray-200 px-4 py-4 space-y-4"
       >
+
         <div class="space-y-2">
           <RouterLink
             to="/"
@@ -134,6 +136,25 @@ function logout() {
   userStore.logout()
   router.push('/')
 }
+
+import { onMounted, onBeforeUnmount } from 'vue'
+
+const sidebarRef = ref(null)
+
+function handleClickOutside(event) {
+  if (menuOpen.value && sidebarRef.value && !sidebarRef.value.contains(event.target)) {
+    menuOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
 </script>
 
 <style scoped>
