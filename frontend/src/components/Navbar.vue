@@ -63,6 +63,16 @@
           </RouterLink>
 
           <RouterLink
+            to="/analyze"
+            class="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100"
+            :class="{ 'bg-gray-100': $route.path === '/analyze' }"
+          >
+            <BarChart class="w-5 h-5" />
+            <span>分析</span>
+          </RouterLink>
+
+
+          <RouterLink
             to="/subscriptions"
             class="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100"
             :class="{ 'bg-gray-100': $route.path === '/subscriptions' }"
@@ -104,8 +114,9 @@ import { ref, computed } from 'vue'
 import { useRouter, useRoute, RouterLink } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import {
-  LogIn, Menu, Home, Tv, User, Clock
+  LogIn, Menu, Home, Tv, User, Clock,BarChart
 } from 'lucide-vue-next'
+
 
 const router = useRouter()
 const route = useRoute()
