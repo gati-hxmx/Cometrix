@@ -1,66 +1,145 @@
 <template>
-  <nav class="w-full bg-white border-b border-gray-200 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between h-16 items-center">
-        <!-- 左: ロゴ -->
-        <div class="flex-shrink-0 text-blue-600 text-2xl font-semibold">
-          <RouterLink to="/" class="hover:text-blue-800">
-            <img src="/brand_logo(favicon).png" alt="Cometrix Logo" class="inline-block h-10 mr-2">
+  <div>
+    <!-- ナビゲーションバー -->
+    <nav class="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 shadow-sm z-50 h-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-full items-center">
+        <!-- 左: ハンバーガー + ロゴ -->
+        <div class="flex items-center space-x-4">
+          <!-- ハンバーガーメニュー -->
+          <button
+            v-if="isLoggedIn"
+            @click="toggleMenu"
+            class="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded p-1"
+          >
+            <Menu class="w-6 h-6" />
+          </button>
+
+          <RouterLink to="/" class="text-blue-600 text-2xl font-semibold hover:text-blue-800 flex items-center">
+            <img src="/brand_logo(favicon).png" alt="Cometrix Logo" class="h-10 mr-2">
             Cometrix
           </RouterLink>
         </div>
 
-        <!-- 右: ナビゲーションリンク -->
+        <!-- 右: 通常リンク -->
         <div class="flex items-center space-x-6 text-gray-700">
           <RouterLink to="/about" class="hover:text-blue-600">Cometrixについて</RouterLink>
           <RouterLink to="/analyze" class="hover:text-blue-600">分析画面</RouterLink>
+
+          <template v-if="isLoggedIn">
+            <RouterLink to="/mypage" class="text-sm font-medium text-blue-600 hover:underline">
+              {{ name }}
+            </RouterLink>
+            <button @click="logout" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
+              ログアウト
+            </button>
+          </template>
+
           <RouterLink
-            v-if="!isLoggedIn"
+            v-else
             to="/login"
-            class="text-blue-500 px-4 py-2  text-m transition duration-200 flex items-center gap-2"
+            class="text-blue-500 px-4 py-2 flex items-center gap-2"
           >
             <LogIn class="w-4 h-4" />
             ログイン
           </RouterLink>
-
-
-
-
-        <template v-if="isLoggedIn">
-          <RouterLink
-            to="/mypage"
-            class="text-sm font-medium text-blue-600 hover:underline"
-          >
-            {{ name }}
-          </RouterLink>
-          <button
-            @click="logout"
-            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-          >
-            ログアウト
-          </button>
-        </template>
-
         </div>
       </div>
-    </div>
-  </nav>
+    </nav>
+
+    <!-- サイドメニュー -->
+    <transition name="slide">
+      <aside
+        v-if="menuOpen && isLoggedIn"
+        class="fixed top-16 left-0 h-full w-55 bg-white shadow-md z-40 border-r border-gray-200 px-4 py-4 space-y-4"
+      >
+        <div class="space-y-2">
+          <RouterLink
+            to="/"
+            class="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100"
+            :class="{ 'bg-gray-100': $route.path === '/' }"
+          >
+            <Home class="w-5 h-5" />
+            <span>ホーム</span>
+          </RouterLink>
+
+          <RouterLink
+            to="/subscriptions"
+            class="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100"
+            :class="{ 'bg-gray-100': $route.path === '/subscriptions' }"
+          >
+            <Tv class="w-5 h-5" />
+            <span>登録チャンネル</span>
+          </RouterLink>
+
+          <RouterLink
+            to="/history"
+            class="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100"
+            :class="{ 'bg-gray-100': $route.path === '/history' }"
+          >
+            <Clock class="w-5 h-5" />
+            <span>履歴</span>
+          </RouterLink>
+
+          <RouterLink
+            to="/mypage"
+            class="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100"
+            :class="{ 'bg-gray-100': $route.path === '/mypage' }"
+          >
+            <User class="w-5 h-5" />
+            <span>マイページ</span>
+          </RouterLink>
+        </div>
+      </aside>
+    </transition>
+
+    <!-- 下のコンテンツ -->
+    <main class="pt-20">
+      <slot />
+    </main>
+  </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRouter, useRoute, RouterLink } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { LogIn } from 'lucide-vue-next'
+import {
+  LogIn, Menu, Home, Tv, User, Clock
+} from 'lucide-vue-next'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 const isLoggedIn = computed(() => userStore.name !== null)
 const name = computed(() => userStore.name)
+const menuOpen = ref(false)
+
+function toggleMenu() {
+  menuOpen.value = !menuOpen.value
+}
 
 function logout() {
   userStore.logout()
   router.push('/')
 }
 </script>
+
+<style scoped>
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease;
+}
+.slide-enter-from {
+  transform: translateX(-100%);
+}
+.slide-enter-to {
+  transform: translateX(0%);
+}
+.slide-leave-from {
+  transform: translateX(0%);
+}
+.slide-leave-to {
+  transform: translateX(-100%);
+}
+</style>
