@@ -1,19 +1,18 @@
 <template>
-  <div class="flex gap-3 text-center text-gray-600 text-sm">
-
-      <div class="text-center">
-    <p class="text-gray-500 text-sm">累計コメント</p>
-    <p class="text-2xl font-bold leading-tight">{{ totalComments }}</p>
-  </div>
+  <div class="flex gap-3 text-center text-gray-600 text-xs">
+    <div class="text-center">
+      <p class="text-gray-500 text-xs">累計コメント</p>
+      <p class="text-xl font-bold leading-tight">{{ totalComments }}</p>
+    </div>
 
     <div class="border-l h-full"></div>
 
-      <div class="text-center">
-    <p class="text-gray-500 text-sm">平均コメント</p>
-    <p class="text-2xl font-bold leading-tight">{{ averagePer30s }}</p>
-  </div>
+    <div class="text-center">
+      <p class="text-gray-500 text-xs">平均コメント</p>
+      <p class="text-xl font-bold leading-tight">{{ averagePer30s }}</p>
+    </div>
 
-  <div class="border-l h-full"></div>
+    <div class="border-l h-full"></div>
   </div>
 </template>
 

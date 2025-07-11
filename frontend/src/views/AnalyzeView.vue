@@ -110,16 +110,21 @@ function startAnalysis() {
 
 
 </div>
-  <SeekControl />
-<div class="flex gap-3 mt-6">
+  
+<div class="flex gap-3 mt-2">
   <CommentStats />
   <PlaybackTime />
+  <SeekControl />
 
-    <div class="space-y-4">
+  <div class="space-y-4">
       
     <ChatFilter />
   </div>
+
+
 </div>
+
+
 
 <!-- <ChatVolumeChart /> -->
   <TestChart />
