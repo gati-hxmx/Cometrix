@@ -16,6 +16,7 @@ import MemoEditor from '@/components/analyze/MemoEditor.vue'
 import ChatFilter from '@/components/analyze/ChatFilter.vue'
 import { useUserStore } from '@/stores/user'
 import { computed, ref, onMounted } from 'vue'
+import SeekControl from '@/components/analyze/SeekControl.vue'
 // import ChatChart from '@/components/ChatChart.vue'
 
 
@@ -48,7 +49,7 @@ function startAnalysis() {
 
 <template>
   <DefaultLayout>
-  <main class="p-8">
+  <main class="px-8">
 
           <!-- ✅ ガード：未契約状態なら警告だけ表示 -->
       <div v-if="!subscription || ['inactive', 'canceled'].includes(subscription.status)" class="text-center text-gray-600">
@@ -109,10 +110,13 @@ function startAnalysis() {
 
 
 </div>
-<div class="flex gap-8 mt-6">
+  <SeekControl />
+<div class="flex gap-3 mt-6">
   <CommentStats />
   <PlaybackTime />
+
     <div class="space-y-4">
+      
     <ChatFilter />
   </div>
 </div>

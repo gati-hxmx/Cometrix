@@ -1,5 +1,5 @@
 <template>
-  <div class="flex gap-6 text-center text-gray-600 text-sm">
+  <div class="flex gap-3 text-center text-gray-600 text-sm">
 
       <div class="text-center">
     <p class="text-gray-500 text-sm">累計コメント</p>
