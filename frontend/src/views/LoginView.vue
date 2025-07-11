@@ -1,6 +1,6 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-white">
-    <div class="text-center max-w-md w-full p-6 bg-white border rounded-xl shadow-md">
+<div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-white">
+  <div class="transform -translate-y-32 text-center max-w-md w-full p-6 bg-white border rounded-xl shadow-md">
       <!-- ロゴと見出し -->
       <div class="mb-6">
         <img

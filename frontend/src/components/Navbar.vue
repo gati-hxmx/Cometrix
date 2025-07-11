@@ -70,8 +70,18 @@
             :class="{ 'bg-gray-100': $route.path === '/analyze' }"
           >
             <BarChart class="w-5 h-5" />
-            <span>分析</span>
+            <span>アーカイブ分析</span>
           </RouterLink>
+
+          <RouterLink
+            to="/live-analyze"
+            class="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100"
+            :class="{ 'bg-gray-100': $route.path === '/live-analyze' }"
+          >
+            <Zap class="w-5 h-5" />
+            <span>LIVE分析</span>
+          </RouterLink>
+
 
 
           <RouterLink
@@ -105,7 +115,7 @@
     </transition>
 
     <!-- 下のコンテンツ -->
-    <main class="pt-20">
+    <main class="pt-16">
       <slot />
     </main>
   </div>
@@ -116,7 +126,7 @@ import { ref, computed } from 'vue'
 import { useRouter, useRoute, RouterLink } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import {
-  LogIn, Menu, Home, Tv, User, Clock,BarChart
+  LogIn, Menu, Home, Tv, User, Clock,BarChart,Zap
 } from 'lucide-vue-next'
 
 
