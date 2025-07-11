@@ -1,5 +1,6 @@
 // stores/chat.js
 import { defineStore } from 'pinia'
+import { useUserStore } from '@/stores/user'  // 👈 追加：ユーザー情報を取得
 
 export const useChatStore = defineStore('chat', {
   state: () => ({
@@ -89,12 +90,29 @@ filteredVolumePer30s(state) {
       this.videoId = videoId
       this.loading = true
       this.error = null
+      const userStore = useUserStore()  // 👈 追加：ユーザー情報を取得
+      const email = userStore.email     // 👈 これを一緒に送る
 
       try {
         let url
         if (platform === 'youtube') {
-          url = `http://localhost:8000/api/chat-data?videoId=${videoId}`
-        } else if (platform === 'twitch') {
+          url = `http://localhost:8000/api/chat-data`
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              videoId,
+              email
+            })
+          })
+          if (!res.ok) throw new Error('チャットデータの取得に失敗しました')
+          const data = await res.json()
+          this.comments = data.comments
+          this.volumePer30s = data.volume_per_30s
+        }
+      else if (platform === 'twitch') {
           url = `http://localhost:8000/api/analyze/twitch/${videoId}`
         } else {
           throw new Error('未対応のプラットフォームです')

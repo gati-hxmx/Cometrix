@@ -10,7 +10,7 @@ from collections import defaultdict
 from services.log_service import save_analysis_log
 import models
 
-def fetch_chat_data(video_id: str) -> Dict:
+def fetch_chat_data(video_id: str, user_id: int) -> Dict:
     from subprocess import check_output
 
     video_url = f"https://www.youtube.com/watch?v={video_id}"
@@ -110,7 +110,7 @@ def fetch_chat_data(video_id: str) -> Dict:
 
         # ✅ 分析ログを保存
         save_analysis_log(
-            user_id=999,
+            user_id=user_id,
             video_url=video_url,
             video_title=title,
             platform="youtube",

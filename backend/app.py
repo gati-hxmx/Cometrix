@@ -152,9 +152,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/api/chat-data")
-def get_chat_data(videoId: str = Query(..., min_length=11, max_length=15)):
-    try:
-        return fetch_chat_data(videoId)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"チャットデータの取得に失敗しました: {e}")
+

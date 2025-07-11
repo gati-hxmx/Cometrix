@@ -36,6 +36,21 @@ def get_chat_data(videoId: str):
         return fetch_youtube_chat_data(videoId)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"チャットデータの取得に失敗しました: {e}")
+    
+from pydantic import BaseModel
+from services.user_service import get_user_id_by_email
+
+class ChatDataRequest(BaseModel):
+    videoId: str
+    email: str
+
+@app.post("/api/chat-data")  # ✅ これを追加！
+def get_chat_data_post(data: ChatDataRequest):
+    user_id = get_user_id_by_email(data.email)
+    if user_id is None:
+        raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
+
+    return fetch_youtube_chat_data(video_id=data.videoId, user_id=user_id)
 
 
 # ✅ Twitch用エンドポイント
