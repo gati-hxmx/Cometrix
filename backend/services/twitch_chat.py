@@ -6,7 +6,7 @@ import os  # ファイル保存のため
 from services.log_service import save_analysis_log 
 import models
 
-def fetch_chat_data(json_path: str, video_id: str) -> Dict:
+def fetch_chat_data(json_path: str, video_id: str, user_id: int = 999) -> Dict:
     comments = []
     with open(json_path, "r", encoding="utf-8") as f:
         all_data = json.load(f)
@@ -49,7 +49,7 @@ def fetch_chat_data(json_path: str, video_id: str) -> Dict:
     video_url = f"https://www.twitch.tv/videos/{video_id}"
 
     save_analysis_log(
-        user_id=999,
+        user_id=user_id,
         video_url=video_url,
         video_title="",  # メタ取得しない場合は空文字
         platform="twitch",

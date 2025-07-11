@@ -5,6 +5,8 @@ from services.twitch_chat import fetch_chat_data as parse_twitch_chat
 import os
 import subprocess
 import json
+from pydantic import BaseModel
+from services.user_service import get_user_id_by_email
 
 app = FastAPI()
 
@@ -92,3 +94,40 @@ def analyze_twitch(video_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"JSONパース失敗: {e}")
 
+class TwitchChatRequest(BaseModel):
+    videoId: str
+    email: str
+
+@app.post("/api/analyze/twitch")
+def analyze_twitch_post(data: TwitchChatRequest):
+    os.makedirs(CHAT_DATA_DIR, exist_ok=True)
+
+    video_id = data.videoId
+    email = data.email
+
+    try:
+        user_id = get_user_id_by_email(email)
+        if user_id is None:
+            raise ValueError("ユーザーが見つかりません")
+    except Exception:
+        raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
+
+    # CLI出力の生ファイル
+    raw_path = os.path.join(CHAT_DATA_DIR, f"{video_id}.json")
+
+    # ✅ 生ファイルがなければ CLI で取得
+    if not os.path.exists(raw_path):
+        try:
+            subprocess.run([
+                "./TwitchDownloaderCLI/TwitchDownloaderCLI", "chatdownload",
+                "--id", video_id,
+                "--output", raw_path
+            ], check=True)
+        except subprocess.CalledProcessError as e:
+            raise HTTPException(status_code=500, detail=f"チャット取得に失敗しました: {e}")
+
+    # ✅ 整形・保存・ログ記録
+    try:
+        return parse_twitch_chat(raw_path, video_id, user_id=user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"JSONパース失敗: {e}")
