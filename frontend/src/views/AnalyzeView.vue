@@ -116,13 +116,11 @@ function startAnalysis() {
   <PlaybackTime />
   <SeekControl />
 
-  <div class="space-y-4">
-      
+  <div class="ml-auto">
     <ChatFilter />
   </div>
-
-
 </div>
+
 
 
 

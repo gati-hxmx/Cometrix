@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center justify-center space-x-4 mt-4">
+  <div class="flex items-center justify-center space-x-4 ">
     <!-- -秒ボタン -->
     <button
       @click="seek(-seekSeconds)"
