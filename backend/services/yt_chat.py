@@ -15,30 +15,46 @@ def fetch_chat_data(video_id: str, user_id: int) -> Dict:
 
     video_url = f"https://www.youtube.com/watch?v={video_id}"
     thumbnail_url = f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
+    save_path = os.path.join("chat_data", f"youtube_{video_id}.json")
 
+    # ✅ 整形済みファイルがあれば再利用＆ログ保存だけ行う
+    if os.path.exists(save_path):
+        try:
+            with open(save_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
 
-    # ✅ メタ情報（タイトル・再生時間）を取得
+            save_analysis_log(
+                user_id=user_id,
+                video_url=video_url,
+                video_title=data.get("title", ""),
+                platform="youtube",
+                duration_sec=data.get("duration_sec", 0),
+                comment_count=len(data.get("comments", [])),
+                result_path=save_path
+            )
+
+            print("[INFO] 整形済みファイルを再利用してログ保存✅")
+            return {
+                **data,
+                "video_url": video_url,
+                "thumbnail_url": thumbnail_url
+            }
+        except Exception as e:
+            print(f"[WARN] 整形済みファイル読み込みエラー: {e}")
+            # 続行して再取得
+
+    # ✅ 新しく取得する処理
     try:
-        title = check_output(
-            ["yt-dlp", "--get-title", video_url],
-            text=True
-        ).strip()
-
-        duration_str = check_output(
-            ["yt-dlp", "--get-duration", video_url],
-            text=True
-        ).strip()
-
-        # 再生時間を秒に変換（hh:mm:ss）
+        title = check_output(["yt-dlp", "--get-title", video_url], text=True).strip()
+        duration_str = check_output(["yt-dlp", "--get-duration", video_url], text=True).strip()
         hms = [int(p) for p in duration_str.split(":")]
         while len(hms) < 3:
-            hms.insert(0, 0)  # mm:ss形式だったらhh=0を追加
+            hms.insert(0, 0)
         h, m, s = hms
         duration_sec = h * 3600 + m * 60 + s
     except Exception as e:
         print("🟥 メタ情報取得失敗:", e)
-        title = ""
-        duration_sec = 0
+        title, duration_sec = "", 0
 
     with tempfile.TemporaryDirectory() as tmpdir:
         command = [
@@ -63,10 +79,8 @@ def fetch_chat_data(video_id: str, user_id: int) -> Dict:
                     video_offset_ms = raw.get("replayChatItemAction", {}).get("videoOffsetTimeMsec")
                     if not video_offset_ms:
                         continue
-
                     offset_sec = int(video_offset_ms) / 1000
                     video_time_str = str(timedelta(seconds=int(offset_sec)))
-
                     actions = raw.get("replayChatItemAction", {}).get("actions", [])
                     for act in actions:
                         renderer = (
@@ -76,29 +90,22 @@ def fetch_chat_data(video_id: str, user_id: int) -> Dict:
                         )
                         if not renderer:
                             continue
-
                         runs = renderer.get("message", {}).get("runs", [])
                         text = "".join([r.get("text", "") for r in runs])
                         author = renderer.get("authorName", {}).get("simpleText", "")
-
-                        if not (author and text):
-                            continue
-
-                        comments.append({
-                            "author": author,
-                            "text": text,
-                            "timestamp": round(offset_sec, 2),
-                            "time_str": video_time_str
-                        })
-
+                        if author and text:
+                            comments.append({
+                                "author": author,
+                                "text": text,
+                                "timestamp": round(offset_sec, 2),
+                                "time_str": video_time_str
+                            })
                 except Exception as e:
                     print(f"[WARN] Skipped one line: {e}")
 
         volume_per_30s = compute_volume_per_30s(comments)
 
-        # ✅ 整形後のコメントを保存する
         os.makedirs("chat_data", exist_ok=True)
-        save_path = os.path.join("chat_data", f"youtube_{video_id}.json")
         with open(save_path, "w", encoding="utf-8") as f_out:
             json.dump({
                 "videoId": video_id,
@@ -108,7 +115,6 @@ def fetch_chat_data(video_id: str, user_id: int) -> Dict:
                 "volume_per_30s": volume_per_30s
             }, f_out, ensure_ascii=False, indent=2)
 
-        # ✅ 分析ログを保存
         save_analysis_log(
             user_id=user_id,
             video_url=video_url,
@@ -129,7 +135,6 @@ def fetch_chat_data(video_id: str, user_id: int) -> Dict:
             "volume_per_30s": volume_per_30s
         }
 
-
 def format_hhmmss(seconds: int) -> str:
     td = timedelta(seconds=seconds)
     total_seconds = int(td.total_seconds())
@@ -144,11 +149,10 @@ def compute_volume_per_30s(comments: List[Dict]) -> List[Dict]:
         sec = int(c["timestamp"])
         bucket = (sec // 30) * 30
         bins[bucket] += 1
-
     return [
         {
-            "start": k,  # 例: 0, 30, 60...
-            "start_str": format_hhmmss(k),  # 例: "00:00:00", "00:00:30"
+            "start": k,
+            "start_str": format_hhmmss(k),
             "count": v
         }
         for k, v in sorted(bins.items())
