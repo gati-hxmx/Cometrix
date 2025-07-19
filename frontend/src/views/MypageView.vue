@@ -155,6 +155,12 @@ async function handleUncancel() {
 
         <div v-else class="text-sm text-gray-500">サブスクリプション情報を取得中...</div>
       </div>
+
+      <div class="mt-8 text-center">
+  <router-link to="/delete-account" class="text-sm text-red-600 hover:underline">
+    アカウントを退会する
+  </router-link>
+</div>
     </main>
   </DefaultLayout>
 </template>

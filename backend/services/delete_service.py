@@ -1,35 +1,33 @@
 import os
 from sqlalchemy.orm import Session
 from models import User, Subscription, AnalysisLog
-from stripe_app import cancel_subscription_by_customer_id
-from db import get_db  # 必要に応じて修正
+from services.stripe_service import cancel_subscription_by_customer_id
 
-def delete_user_account(email: str, db: Session):
-    # ユーザー取得
-    user = db.query(User).filter(User.email == email).first()
+
+import stripe
+
+def delete_user_account(db: Session, user_id: int):
+    user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        return {"success": False, "message": "ユーザーが見つかりません"}
+        raise Exception("ユーザーが見つかりません")
 
-    user_id = user.id
+    # ✅ Stripe customer ID を email から取得
+    stripe_customers = stripe.Customer.list(email=user.email).data
+    if stripe_customers:
+        stripe_customer_id = stripe_customers[0]["id"]
+        subscriptions = stripe.Subscription.list(customer=stripe_customer_id).data
+        for sub in subscriptions:
+            stripe.Subscription.delete(sub["id"])  # 即時解約
+        print(f"🗑️ Stripe上のsubscriptionを削除しました: {user.email}")
+    else:
+        print(f"⚠️ Stripe Customerが見つかりません: {user.email}")
 
-    # Stripeのサブスクリプションをキャンセル
-    if user.stripe_customer_id:
-        cancel_subscription_by_customer_id(user.stripe_customer_id)
-
-    # 保存済みJSONファイルを削除
-    logs = db.query(AnalysisLog).filter(AnalysisLog.user_id == user_id).all()
-    for log in logs:
-        if log.result_path and os.path.exists(log.result_path):
-            try:
-                os.remove(log.result_path)
-            except Exception as e:
-                print(f"[WARN] JSON削除失敗: {log.result_path} -> {e}")
-
-    # 関連テーブル削除（外部キー制約の順に注意）
-    db.query(AnalysisLog).filter(AnalysisLog.user_id == user_id).delete()
-    db.query(Subscription).filter(Subscription.user_id == user_id).delete()
-    db.query(User).filter(User.id == user_id).delete()
-
+    # ✅ 自前DBから関連データを削除
+    db.query(Subscription).filter_by(user_id=user.id).delete()
+    db.query(AnalysisLog).filter_by(user_id=user.id).delete()
+    db.delete(user)
     db.commit()
+    print(f"✅ ユーザーと関連データを削除しました: {user.email}")
 
-    return {"success": True, "message": "ユーザーと関連データを削除しました"}
+
+

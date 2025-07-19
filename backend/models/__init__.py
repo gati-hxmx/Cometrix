@@ -1,4 +1,3 @@
-# backend/models/__init__.py
-
-from .user_model import User
-from .analysis_log_model import AnalysisLog
+from models.user_model import User
+from models.subscription_model import Subscription
+from models.analysis_log_model import AnalysisLog

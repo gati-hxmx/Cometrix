@@ -9,6 +9,8 @@ import Leagal from '../views/Leagal.vue'
 import PrivacyPolicy from '@/views/PrivacyPolicy.vue'
 import BillingSuccess from '@/views/billing/BillingSuccess.vue'
 import BillingCancel from '@/views/billing/BillingCancel.vue'
+import DeleteAccount from '@/views/account/DeleteAccount.vue'
+import GoodbyeComplete from '@/views/account/GoodbyeComplete.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
@@ -20,7 +22,9 @@ const routes = [
   { path: '/leagal', name: 'Leagal', component: Leagal },
   { path: '/privacypolicy', name: 'PrivacyPolicy', component: PrivacyPolicy },
   { path: '/billingsuccess', name: 'BillingSuccess', component: BillingSuccess },
-  { path: '/billingcancel', name: 'BillingCancel', component: BillingCancel }
+  { path: '/billingcancel', name: 'BillingCancel', component: BillingCancel },
+  { path: '/delete-account', name: 'DeleteAccount', component: DeleteAccount },
+  { path: '/goodbye-complete', name: 'GoodbyeComplete', component: GoodbyeComplete },
 ]
 
 const router = createRouter({

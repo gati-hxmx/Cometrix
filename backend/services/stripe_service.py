@@ -1,20 +1,20 @@
 # services/stripe_service.py
 
-import stripe
 import os
+import stripe
+from dotenv import load_dotenv
 
-# 環境変数から秘密キーを取得（.envから読み込んでる前提）
-stripe.api_key = "REDACTED_STRIPE_TEST_KEY"
-
+load_dotenv()
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 print("[DEBUG] Stripe API key is set to:", stripe.api_key)
 
-# 実際にCheckoutセッションを作る処理
+# ✅ Checkout セッションを作成
 def create_checkout_session(email):
     session = stripe.checkout.Session.create(
         mode='subscription',
-        customer_email=email,  # ← これがWebhookで取得できるようになる
+        customer_email=email,
         line_items=[{
-            'price': 'price_1Rfo5eRsRvEmgDyKvpEbkWuj',  # あなたのPrice IDに置き換え
+            'price': 'price_1Rfo5eRsRvEmgDyKvpEbkWuj',  # 本番環境では.envから取得でもOK
             'quantity': 1,
         }],
         subscription_data={
@@ -25,4 +25,34 @@ def create_checkout_session(email):
     )
     return session
 
+# ✅ 顧客IDから全サブスクリプションをキャンセル
+def cancel_subscription_by_customer_id(customer_id):
+    try:
+        subs = stripe.Subscription.list(customer=customer_id)
+        for sub in subs.auto_paging_iter():
+            stripe.Subscription.delete(sub.id)
+            print(f"✅ Stripe上のサブスクリプション {sub.id} をキャンセルしました")
+        return True
+    except Exception as e:
+        print(f"🟥 Stripeサブスクリプションのキャンセルに失敗: {e}")
+        return False
 
+# ✅ email を元に即時キャンセル（主に FastAPI 側で使用）
+def cancel_stripe_subscription_immediately(email: str) -> bool:
+    try:
+        customers = stripe.Customer.list(email=email).data
+        if not customers:
+            raise Exception("Stripe customer not found")
+
+        customer_id = customers[0]["id"]
+
+        subscriptions = stripe.Subscription.list(customer=customer_id, status="all").data
+        if not subscriptions:
+            raise Exception("No subscriptions found for this customer")
+
+        stripe.Subscription.delete(subscriptions[0]["id"])
+        print(f"✅ Stripe subscription immediately canceled for {email}")
+        return True
+    except Exception as e:
+        print("🟥 Stripeキャンセル失敗:", e)
+        raise

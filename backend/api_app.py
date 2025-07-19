@@ -131,3 +131,39 @@ def analyze_twitch_post(data: TwitchChatRequest):
         return parse_twitch_chat(raw_path, video_id, user_id=user_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"JSONパース失敗: {e}")
+    
+
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy_db import get_db
+from services.user_service import get_user_id_by_email
+from services.delete_service import delete_user_account
+from pydantic import BaseModel
+
+class DeleteRequest(BaseModel):
+    email: str
+
+@app.post("/api/delete-account")
+def delete_account(data: DeleteRequest, db: Session = Depends(get_db)):
+    try:
+        user_id = get_user_id_by_email(data.email)
+        if not user_id:
+            raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
+
+        delete_user_account(db=db, user_id=user_id)
+        return {"message": "アカウントを削除しました"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"退会処理に失敗しました: {str(e)}")
+
+# api_app.py（または routes/account.py 等）
+
+from fastapi import FastAPI, HTTPException
+from services.stripe_service import cancel_stripe_subscription_immediately
+
+@app.post("/api/test-cancel-stripe")
+def test_cancel_stripe(email: str):
+    try:
+        cancel_stripe_subscription_immediately(email)
+        return {"message": f"{email} のサブスクリプションを即時キャンセルしました"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"キャンセル失敗: {str(e)}")
