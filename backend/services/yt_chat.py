@@ -157,3 +157,13 @@ def compute_volume_per_30s(comments: List[Dict]) -> List[Dict]:
         }
         for k, v in sorted(bins.items())
     ]
+
+def analyze_youtube_chat(video_url: str, user_id: str = None):
+    # YouTubeの動画IDだけを抽出（末尾のv=）
+    import re
+    match = re.search(r"v=([a-zA-Z0-9_-]{11})", video_url)
+    if not match:
+        raise ValueError("Invalid YouTube video URL")
+    video_id = match.group(1)
+    return fetch_chat_data(video_id, user_id)
+

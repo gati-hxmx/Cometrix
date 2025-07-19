@@ -105,3 +105,7 @@ def test_cancel_stripe(email: str):
         return {"message": f"{email} のサブスクリプションを即時キャンセルしました"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"キャンセル失敗: {str(e)}")
+
+
+from routes.analyze import router as analyze_router
+app.include_router(analyze_router, prefix="/api/analyze")

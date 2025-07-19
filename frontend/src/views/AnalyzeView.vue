@@ -1,3 +1,4 @@
+
 <script setup>
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import VideoUrlInput from '@/components/analyze/VideoUrlInput.vue';
