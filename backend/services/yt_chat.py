@@ -10,17 +10,26 @@ from collections import defaultdict
 from services.log_service import save_analysis_log
 import models
 
+# ファイルの先頭あたりに追加
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # backend/services
+CHAT_DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "chat_data"))  # backend/chat_data
+os.makedirs(CHAT_DATA_DIR, exist_ok=True)
+
+
 def fetch_chat_data(video_id: str, user_id: int) -> Dict:
     from subprocess import check_output
 
     video_url = f"https://www.youtube.com/watch?v={video_id}"
     thumbnail_url = f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
-    save_path = os.path.join("chat_data", f"youtube_{video_id}.json")
+    save_path = os.path.join(CHAT_DATA_DIR, f"youtube_{video_id}.json")
+
 
     # ✅ 整形済みファイルがあれば再利用＆ログ保存だけ行う
     if os.path.exists(save_path):
         try:
             with open(save_path, "r", encoding="utf-8") as f:
+                print(f"[DEBUG] Saving chat data to: {save_path}")
+
                 data = json.load(f)
 
             save_analysis_log(
@@ -41,6 +50,7 @@ def fetch_chat_data(video_id: str, user_id: int) -> Dict:
             }
         except Exception as e:
             print(f"[WARN] 整形済みファイル読み込みエラー: {e}")
+            raise
             # 続行して再取得
 
     # ✅ 新しく取得する処理
@@ -71,6 +81,9 @@ def fetch_chat_data(video_id: str, user_id: int) -> Dict:
 
         json_path = os.path.join(tmpdir, f"{video_id}.live_chat.json")
         comments = []
+
+        print(f"[INFO] 🚨 JSON保存直前: {save_path}")
+
 
         with open(json_path, "r", encoding="utf-8") as f:
             for line in f:
@@ -105,7 +118,7 @@ def fetch_chat_data(video_id: str, user_id: int) -> Dict:
 
         volume_per_30s = compute_volume_per_30s(comments)
 
-        os.makedirs("chat_data", exist_ok=True)
+        # os.makedirs("chat_data", exist_ok=True)
         with open(save_path, "w", encoding="utf-8") as f_out:
             json.dump({
                 "videoId": video_id,
