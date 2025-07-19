@@ -112,18 +112,24 @@ filteredVolumePer30s(state) {
           this.comments = data.comments
           this.volumePer30s = data.volume_per_30s
         }
-      else if (platform === 'twitch') {
-          url = `http://localhost:8000/api/analyze/twitch/${videoId}`
-        } else {
-          throw new Error('未対応のプラットフォームです')
-        }
-
-        const res = await fetch(url)
-        if (!res.ok) throw new Error('チャットデータの取得に失敗しました')
+        else if (platform === 'twitch') {
+          url = `http://localhost:8000/api/chat-data/twitch`
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              videoId,
+              email
+            })
+          })
+          if (!res.ok) throw new Error('チャットデータの取得に失敗しました')
 
         const data = await res.json()
         this.comments = data.comments
         this.volumePer30s = data.volume_per_30s
+        }
       } catch (err) {
         this.error = err.message
       } finally {

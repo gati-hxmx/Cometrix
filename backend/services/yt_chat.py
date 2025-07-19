@@ -97,8 +97,8 @@ def fetch_chat_data(video_id: str, user_id: int) -> Dict:
         volume_per_30s = compute_volume_per_30s(comments)
 
         # ✅ 整形後のコメントを保存する
-        os.makedirs("backend/chat_data", exist_ok=True)
-        save_path = os.path.join("backend/chat_data", f"youtube_{video_id}.json")
+        os.makedirs("chat_data", exist_ok=True)
+        save_path = os.path.join("chat_data", f"youtube_{video_id}.json")
         with open(save_path, "w", encoding="utf-8") as f_out:
             json.dump({
                 "videoId": video_id,

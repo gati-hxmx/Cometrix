@@ -1,3 +1,5 @@
+
+# backend/services/twitch_chat.py
 import json
 from datetime import timedelta
 from typing import List, Dict
@@ -6,7 +8,7 @@ import os  # ファイル保存のため
 from services.log_service import save_analysis_log 
 import models
 
-def fetch_chat_data(json_path: str, video_id: str, user_id: int = 999) -> Dict:
+def fetch_chat_data(json_path: str, video_id: str, user_id: int) -> Dict:
     comments = []
     with open(json_path, "r", encoding="utf-8") as f:
         all_data = json.load(f)
@@ -34,7 +36,7 @@ def fetch_chat_data(json_path: str, video_id: str, user_id: int = 999) -> Dict:
     volume_per_30s = compute_volume_per_30s(comments)
 
     # ✅ chat_data に保存
-    save_dir = "backend/chat_data"
+    save_dir = "chat_data"
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(save_dir, f"twitch_{video_id}.json")
 
