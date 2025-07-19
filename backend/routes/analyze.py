@@ -1,10 +1,10 @@
-# routes/analyze.py （FastAPIバージョン）
+# backend/routes/analyze.py
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from tasks.chat_tasks import analyze_youtube_chat
-from services.user_service import get_user_id_by_email
+from tasks.chat_tasks import analyze_youtube_chat_task
 from celery.result import AsyncResult
 from celery_app import celery_app
+from services.user_service import get_user_id_by_email
 
 router = APIRouter()
 
@@ -12,17 +12,19 @@ class AnalyzeRequest(BaseModel):
     videoId: str
     email: str
 
+# backend/routes/analyze.py
+
 @router.post("/youtube/async")
-def analyze_youtube_async(data: AnalyzeRequest):
-    user_id = get_user_id_by_email(data.email)
+def analyze_youtube_async(request: AnalyzeRequest):
+    user_id = get_user_id_by_email(request.email)
     if user_id is None:
         raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
 
-    task = analyze_youtube_chat.delay(data.videoId, user_id)
-    return {
-        "message": "分析ジョブをキューに登録しました",
-        "task_id": task.id
-    }
+    full_url = f"https://www.youtube.com/watch?v={request.videoId}"  # ←ここで組み立てる
+    task = analyze_youtube_chat_task.delay(full_url, user_id)
+    return {"task_id": task.id}
+
+
 
 @router.get("/task-status/{task_id}")
 def get_task_status(task_id: str):

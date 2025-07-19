@@ -113,7 +113,9 @@ filteredVolumePer30s(state) {
         }
 
         // --- ✅ YouTube は非同期ジョブとして投げる ---
-        const jobRes = await fetch(`http://localhost:8000/api/analyze/youtube/async`, {
+        // chat.js で fetch のURLを明示的にFastAPIサーバに向ける
+const jobRes = await fetch(`http://localhost:8000/api/analyze/youtube/async`, {
+
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ videoId, email })

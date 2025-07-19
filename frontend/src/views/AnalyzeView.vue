@@ -128,10 +128,10 @@ function startAnalysis() {
 <!-- <ChatVolumeChart /> -->
   <TestChart />
 
-    <div v-if="videoId" class="mt-6">
-      <p>取得した動画ID: <strong>{{ videoId }}</strong></p>
-      <!-- 次ステップへ進める -->
-    </div>
+<div v-if="chat.videoId" class="mt-6">
+  <p>取得した動画ID: <strong>{{ chat.videoId }}</strong></p>
+</div>
+
 
   </div>
   </main>
