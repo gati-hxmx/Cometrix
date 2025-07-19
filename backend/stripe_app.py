@@ -48,10 +48,16 @@ def stripe_webhook():
 
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
+        print("[DEBUG] checkout.session.completed イベント受信")
+        print("[DEBUG] セッション内容:", session)
+
         email = session.get("customer_email")
+        print("[DEBUG] customer_email:", email)
 
         if not email:
+            print("❌ customer_email が見つかりません")
             return jsonify({"error": "No email in session"}), 400
+
 
         user = db.query(User).filter_by(email=email).first()
         if user:
