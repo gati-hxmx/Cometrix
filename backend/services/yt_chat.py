@@ -39,7 +39,8 @@ def fetch_chat_data(video_id: str, user_id: int) -> Dict:
                 platform="youtube",
                 duration_sec=data.get("duration_sec", 0),
                 comment_count=len(data.get("comments", [])),
-                result_path=save_path
+                result_path=save_path,
+                thumbnail_url=thumbnail_url
             )
 
             print("[INFO] 整形済みファイルを再利用してログ保存✅")
@@ -135,7 +136,8 @@ def fetch_chat_data(video_id: str, user_id: int) -> Dict:
             platform="youtube",
             duration_sec=duration_sec,
             comment_count=len(comments),
-            result_path=save_path
+            result_path=save_path,
+            thumbnail_url=thumbnail_url
         )
 
         return {

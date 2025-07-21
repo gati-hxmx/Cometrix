@@ -16,6 +16,7 @@ class AnalysisLog(Base):
     comment_count = Column(Integer)
     duration_sec = Column(Integer)
     result_path = Column(Text)
+    thumbnail_url = Column(Text, nullable=True)
 
     def to_dict(self):
         return {
@@ -25,6 +26,7 @@ class AnalysisLog(Base):
             "analyzed_at": self.analyzed_at.isoformat(),
             "comment_count": self.comment_count,
             "duration_sec": self.duration_sec,
+            "thumbnail_url": self.thumbnail_url 
         }
 
 

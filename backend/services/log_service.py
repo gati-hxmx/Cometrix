@@ -1,12 +1,10 @@
-# log_service.py
-
 from models.analysis_log_model import AnalysisLog
 from sqlalchemy_db import SessionLocal
 from datetime import datetime
 
-
 def save_analysis_log(user_id, video_url, video_title, platform, duration_sec,
-                      comment_count, result_path, success=True, error_message=None):
+                      comment_count, result_path, thumbnail_url=None,
+                      success=True, error_message=None):  # ← ここに追加
     db = SessionLocal()
     try:
         log = AnalysisLog(
@@ -17,6 +15,7 @@ def save_analysis_log(user_id, video_url, video_title, platform, duration_sec,
             duration_sec=duration_sec,
             comment_count=comment_count,
             result_path=result_path,
+            thumbnail_url=thumbnail_url,  # ← ここにも追加
             analyzed_at=datetime.utcnow(),
         )
         db.add(log)
