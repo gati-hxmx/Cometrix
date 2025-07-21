@@ -15,18 +15,24 @@
         >
           <!-- ✅ サムネイル -->
           <div class="w-[180px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden border">
-            <img
-              v-if="log.thumbnail_url"
-              :src="log.thumbnail_url"
-              alt="thumbnail"
-              class="w-full h-full object-cover"
-            />
-            <div
-              v-else
-              class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500 text-sm"
+            <router-link
+              :to="{ path: '/analyze', query: { video: log.video_url } }"
+              class="w-[180px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden border block"
             >
-              No Image
-            </div>
+              <img
+                v-if="log.thumbnail_url"
+                :src="log.thumbnail_url"
+                alt="thumbnail"
+                class="w-full h-full object-cover"
+              />
+              <div
+                v-else
+                class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500 text-sm"
+              >
+                No Image
+              </div>
+            </router-link>
+
           </div>
 
           <!-- ✅ 情報エリア -->
@@ -41,9 +47,16 @@
               </span>
             </div>
 
-            <p class="text-base font-semibold text-gray-900 line-clamp-2">
-              {{ isValidTitle(log.video_title) ? log.video_title : '（タイトルなし）' }}
-            </p>
+<router-link
+  :to="{
+    path: '/analyze',
+    query: { video: log.video_url }
+  }"
+  class="hover:underline font-semibold text-gray-900 text-base"
+>
+  {{ isValidTitle(log.video_title) ? log.video_title : '（タイトルなし）' }}
+</router-link>
+
 
             <a
               :href="log.video_url"

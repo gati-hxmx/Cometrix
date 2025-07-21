@@ -46,6 +46,36 @@ function startAnalysis() {
     isLoading.value = false
   }, 2000)
 }
+
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+
+onMounted(() => {
+  const videoUrl = route.query.video
+  if (videoUrl && typeof videoUrl === 'string') {
+    const { platform, videoId } = parseVideoUrl(videoUrl)
+    if (platform && videoId) {
+      handleVideoIdSubmit({ platform, videoId })
+    }
+  }
+})
+
+// URLから platform / videoId を抽出
+function parseVideoUrl(url) {
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/)
+  const twMatch = url.match(/twitch\.tv\/videos\/(\d+)/)
+
+  if (ytMatch) {
+    return { platform: 'youtube', videoId: ytMatch[1] }
+  } else if (twMatch) {
+    return { platform: 'twitch', videoId: twMatch[1] }
+  } else {
+    return { platform: null, videoId: null }
+  }
+}
+
+
 </script>
 
 <template>
