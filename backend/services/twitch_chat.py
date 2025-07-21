@@ -1,14 +1,34 @@
-
-# backend/services/twitch_chat.py
 import json
 from datetime import timedelta
 from typing import List, Dict
 from collections import defaultdict
-import os  # ファイル保存のため
-from services.log_service import save_analysis_log 
+import os
+import subprocess
+
+from services.log_service import save_analysis_log
 import models
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CHAT_DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "chat_data"))
+CLI_EXECUTABLE = os.path.abspath(os.path.join(BASE_DIR, "..", "TwitchDownloaderCLI", "TwitchDownloaderCLI"))
+
+os.makedirs(CHAT_DATA_DIR, exist_ok=True)
+
+
 def fetch_chat_data(json_path: str, video_id: str, user_id: int) -> Dict:
+    # ✅ JSONファイルが存在しない場合、CLIで取得
+    if not os.path.exists(json_path):
+        try:
+            subprocess.run([
+                CLI_EXECUTABLE, "chatdownload",
+                "--id", video_id,
+                "--output", json_path
+            ], check=True)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"TwitchDownloaderCLIの実行に失敗: {e}")
+        except FileNotFoundError as e:
+            raise RuntimeError(f"TwitchDownloaderCLIが見つかりません: {e}")
+
     comments = []
     with open(json_path, "r", encoding="utf-8") as f:
         all_data = json.load(f)
@@ -29,17 +49,13 @@ def fetch_chat_data(json_path: str, video_id: str, user_id: int) -> Dict:
                     "timestamp": round(offset_sec, 2),
                     "time_str": str(timedelta(seconds=int(offset_sec)))
                 })
-
             except Exception as e:
-                print(f"[WARN] Skipped one comment: {e}")
+                print(f"[WARN] コメントスキップ: {e}")
 
     volume_per_30s = compute_volume_per_30s(comments)
 
     # ✅ chat_data に保存
-    save_dir = "chat_data"
-    os.makedirs(save_dir, exist_ok=True)
-    save_path = os.path.join(save_dir, f"twitch_{video_id}.json")
-
+    save_path = os.path.join(CHAT_DATA_DIR, f"twitch_{video_id}.json")
     with open(save_path, "w", encoding="utf-8") as f_out:
         json.dump({
             "comments": comments,
@@ -53,7 +69,7 @@ def fetch_chat_data(json_path: str, video_id: str, user_id: int) -> Dict:
     save_analysis_log(
         user_id=user_id,
         video_url=video_url,
-        video_title="",  # メタ取得しない場合は空文字
+        video_title="",  # メタデータ取得しないなら空文字
         platform="twitch",
         duration_sec=duration_sec,
         comment_count=len(comments),
@@ -63,13 +79,11 @@ def fetch_chat_data(json_path: str, video_id: str, user_id: int) -> Dict:
     return {
         "videoId": video_id,
         "video_url": video_url,
-        "title": "",  # 任意でメタ情報取得も可能
+        "title": "",
         "duration_sec": duration_sec,
         "comments": comments,
         "volume_per_30s": volume_per_30s
     }
-
-
 
 
 def format_hhmmss(seconds: int) -> str:
@@ -79,6 +93,7 @@ def format_hhmmss(seconds: int) -> str:
     minutes = (total_seconds % 3600) // 60
     secs = total_seconds % 60
     return f"{hours:02}:{minutes:02}:{secs:02}"
+
 
 def compute_volume_per_30s(comments: List[Dict]) -> List[Dict]:
     bins = defaultdict(int)

@@ -98,23 +98,44 @@ filteredVolumePer30s(state) {
         let url, res, data
 
         // --- ✅ Twitch は従来どおり同期取得 ---
-        if (platform === 'twitch') {
-          url = `http://localhost:8000/api/chat-data/twitch`
-          res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ videoId, email })
-          })
-          if (!res.ok) throw new Error('Twitchチャットの取得に失敗しました')
-          data = await res.json()
-          this.comments = data.comments
-          this.volumePer30s = data.volume_per_30s
-          return
+      if (platform === 'twitch') {
+        const jobRes = await fetch(`http://localhost:8000/api/analyze/twitch/async`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ videoId, email }),
+        })
+        if (!jobRes.ok) throw new Error('Twitchジョブ登録に失敗しました')
+        const { task_id } = await jobRes.json()
+
+        let attempts = 0
+        let result = null
+        while (attempts < 60) {
+          const statusRes = await fetch(`http://localhost:8000/api/analyze/task-status/${task_id}`)
+          const statusJson = await statusRes.json()
+
+          if (statusJson.status === 'SUCCESS' && statusJson.result) {
+            result = statusJson.result
+            break
+          }
+          if (statusJson.status === 'FAILURE') {
+            throw new Error('Twitch分析に失敗しました')
+          }
+
+          await new Promise(r => setTimeout(r, 500))
+          attempts++
         }
+
+        if (!result) throw new Error('タイムアウトしました')
+
+        this.comments = result.comments
+        this.volumePer30s = result.volume_per_30s
+        return
+      }
+
 
         // --- ✅ YouTube は非同期ジョブとして投げる ---
         // chat.js で fetch のURLを明示的にFastAPIサーバに向ける
-const jobRes = await fetch(`http://localhost:8000/api/analyze/youtube/async`, {
+        const jobRes = await fetch(`http://localhost:8000/api/analyze/youtube/async`, {
 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

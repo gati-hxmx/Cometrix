@@ -98,6 +98,26 @@ async function handleSubmit() {
     }
   }
 
+  if (result.platform === 'twitch') {
+  try {
+    const res = await fetch("http://localhost:8000/api/analyze/twitch/async", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        json_path: `/Users/uedahayato/Develp/Cometrix/commetrix/chat_data/twitch_${result.videoId}.json`,
+        video_id: result.videoId,
+        user_id: userStore.userId,
+      }),
+    })
+    const data = await res.json()
+    console.log('Twitch分析ジョブ送信成功:', data.task_id)
+  } catch (err) {
+    console.error('Twitchジョブ送信失敗', err)
+    errorMessage.value = 'ジョブ送信に失敗しました'
+  }
+}
+
+
   // 既存機能：emitで親に渡す
   emit('submit', result)
 
