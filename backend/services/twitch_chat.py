@@ -7,6 +7,17 @@ import subprocess
 
 from services.log_service import save_analysis_log
 import models
+# 追加（ファイル冒頭あたり）
+from services.twitch_api import get_twitch_access_token, get_twitch_thumbnail_url
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+# グローバル変数で使い回し（60日間有効）
+TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
+TWITCH_CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
+TWITCH_ACCESS_TOKEN = get_twitch_access_token(TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET)
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CHAT_DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "chat_data"))
@@ -65,16 +76,19 @@ def fetch_chat_data(json_path: str, video_id: str, user_id: int) -> Dict:
     # ✅ 分析ログを保存
     duration_sec = int(max(c["timestamp"] for c in comments)) if comments else 0
     video_url = f"https://www.twitch.tv/videos/{video_id}"
+    thumbnail_url = get_twitch_thumbnail_url(video_id, TWITCH_CLIENT_ID, TWITCH_ACCESS_TOKEN)
 
     save_analysis_log(
         user_id=user_id,
         video_url=video_url,
-        video_title="",  # メタデータ取得しないなら空文字
+        video_title="",  # 取得しないなら空でOK
         platform="twitch",
         duration_sec=duration_sec,
         comment_count=len(comments),
-        result_path=save_path
+        result_path=save_path,
+        thumbnail_url=thumbnail_url  # ← ここ追加！
     )
+
 
     return {
         "videoId": video_id,
