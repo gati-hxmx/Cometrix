@@ -3,12 +3,12 @@
     <!-- ナビゲーションバー -->
     <nav class="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 shadow-sm z-50 h-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-full items-center">
+        
         <!-- 左: ハンバーガー + ロゴ -->
         <div class="flex items-center space-x-4">
-          <!-- ハンバーガーメニュー -->
           <button
             v-if="isLoggedIn"
-            @click.stop="toggleMenu"  
+            @click.stop="toggleMenu"
             class="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded p-1"
           >
             <Menu class="w-6 h-6" />
@@ -20,10 +20,30 @@
           </RouterLink>
         </div>
 
+<!-- 中央: 検索フォーム -->
+<div class="flex-1 px-8">
+  <form
+    @submit.prevent="goToAnalysis"
+    class="max-w-xl mx-auto flex items-center bg-white border border-gray-300 rounded-full shadow-sm overflow-hidden"
+  >
+    <input
+      v-model="videoUrl"
+      type="text"
+      placeholder="YouTubeまたはTwitchのURLを入力"
+      class="flex-1 px-4 py-2 text-sm focus:outline-none border-none"
+    />
+    <button
+      type="submit"
+      class="bg-gray-100 hover:bg-gray-200 px-4 py-2"
+    >
+      <Search class="w-5 h-5 text-gray-600" />
+    </button>
+  </form>
+</div>
+
+
         <!-- 右: 通常リンク -->
         <div class="flex items-center space-x-6 text-gray-700">
-          <RouterLink to="/about" class="hover:text-blue-600">Cometrixについて</RouterLink>
-          <RouterLink to="/analyze" class="hover:text-blue-600">分析画面</RouterLink>
 
           <template v-if="isLoggedIn">
             <RouterLink to="/mypage" class="text-sm font-medium text-blue-600 hover:underline">
@@ -122,16 +142,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute, RouterLink } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import {
-  LogIn, Menu, Home, Tv, User, Clock,BarChart,Zap
+  LogIn, Menu, Home, Tv, User, Clock, BarChart, Zap
 } from 'lucide-vue-next'
-
+import { Search } from 'lucide-vue-next' 
 
 const router = useRouter()
-const route = useRoute()
 const userStore = useUserStore()
 
 const isLoggedIn = computed(() => userStore.name !== null)
@@ -147,10 +166,7 @@ function logout() {
   router.push('/')
 }
 
-import { onMounted, onBeforeUnmount } from 'vue'
-
 const sidebarRef = ref(null)
-
 function handleClickOutside(event) {
   if (menuOpen.value && sidebarRef.value && !sidebarRef.value.contains(event.target)) {
     menuOpen.value = false
@@ -160,11 +176,21 @@ function handleClickOutside(event) {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
-
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
+
+// ✅ 分析用の検索URL
+const videoUrl = ref('')
+
+function goToAnalysis() {
+  const url = videoUrl.value.trim()
+  if (url !== '') {
+    router.push({ path: '/analyze', query: { video: url } })
+    videoUrl.value = ''
+  }
+}
 </script>
 
 <style scoped>
