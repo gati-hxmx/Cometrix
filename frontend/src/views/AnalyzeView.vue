@@ -29,10 +29,6 @@ const chat = useChatStore();
 const userStore = useUserStore();
 const subscription = computed(() => userStore.subscription);
 
-const handleVideoIdSubmit = ({ platform, videoId }) => {
-  chat.fetchChatData(platform, videoId);
-};
-
 const isLoading = ref(false);
 
 function startAnalysis() {
@@ -84,6 +80,18 @@ watch(
     }
   }
 );
+
+const handleVideoIdSubmit = async ({ platform, videoId }) => {
+  isLoading.value = true; // 🔥 ローディング開始
+
+  try {
+    await chat.fetchChatData(platform, videoId); // 🔁 非同期処理を待つ
+  } catch (error) {
+    console.error("チャット取得エラー:", error);
+  } finally {
+    isLoading.value = false; // ✅ 終了時にローディング非表示
+  }
+};
 </script>
 
 <template>
