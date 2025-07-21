@@ -12,7 +12,6 @@
           <button
             v-if="isLoggedIn"
             @click.stop="toggleMenu"
-            @click.stop="toggleMenu"
             class="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded p-1"
           >
             <Menu class="w-6 h-6" />
