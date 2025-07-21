@@ -7,60 +7,62 @@
         分析履歴がありません。
       </div>
 
-      <div v-else class="space-y-4">
+      <div v-else class="space-y-6">
         <div
           v-for="log in logs"
           :key="log.id"
-          class="border rounded shadow-sm p-4 hover:bg-gray-50 transition"
+          class="flex gap-4 items-start border rounded-lg p-4 hover:bg-gray-50 transition"
         >
-          <div class="flex justify-between items-center">
-            <div class="text-sm text-gray-500">
-              {{ formatDate(log.analyzed_at) }}
-            </div>
-            <span
-              class="text-xs px-2 py-1 rounded capitalize"
-              :class="platformClass(log.platform)"
+          <!-- ✅ サムネイル -->
+          <div class="w-[180px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden border">
+            <img
+              v-if="log.thumbnail_url"
+              :src="log.thumbnail_url"
+              alt="thumbnail"
+              class="w-full h-full object-cover"
+            />
+            <div
+              v-else
+              class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500 text-sm"
             >
-              {{ log.platform }}
-            </span>
+              No Image
+            </div>
           </div>
 
-          <div class="mt-2 flex gap-4 items-start">
-            <div>
-              <img
-                v-if="log.thumbnail_url"
-                :src="log.thumbnail_url"
-                alt="thumbnail"
-                class="w-32 h-20 object-cover rounded border"
-              />
-              <div
-                v-else
-                class="w-32 h-20 flex items-center justify-center bg-gray-100 text-gray-500 text-sm rounded border"
+          <!-- ✅ 情報エリア -->
+          <div class="flex-1">
+            <div class="flex justify-between items-center mb-1">
+              <p class="text-gray-500 text-sm">{{ formatDate(log.analyzed_at) }}</p>
+              <span
+                class="text-xs px-2 py-1 rounded capitalize"
+                :class="platformClass(log.platform)"
               >
-                No Image
-              </div>
+                {{ log.platform }}
+              </span>
             </div>
-            <div class="flex-1">
-              <p class="font-semibold text-lg">
-                {{ isValidTitle(log.video_title) ? log.video_title : '（タイトルなし）' }}
-              </p>
-              <a
-                :href="log.video_url"
-                target="_blank"
-                class="text-sm text-blue-600 hover:underline"
-              >
-                {{ log.video_url }}
-              </a>
-              <div class="mt-1 text-sm text-gray-600">
-                コメント数: {{ log.comment_count }} ／ 再生時間: {{ formatDuration(log.duration_sec) }}
-              </div>
-            </div>
+
+            <p class="text-base font-semibold text-gray-900 line-clamp-2">
+              {{ isValidTitle(log.video_title) ? log.video_title : '（タイトルなし）' }}
+            </p>
+
+            <a
+              :href="log.video_url"
+              target="_blank"
+              class="text-sm text-blue-600 hover:underline break-all"
+            >
+              {{ log.video_url }}
+            </a>
+
+            <p class="text-sm text-gray-600 mt-1">
+              コメント数: {{ log.comment_count }} ／ 再生時間: {{ formatDuration(log.duration_sec) }}
+            </p>
           </div>
         </div>
       </div>
     </div>
   </DefaultLayout>
 </template>
+
 
 
 <script setup>
