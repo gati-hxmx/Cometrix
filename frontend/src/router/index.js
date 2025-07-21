@@ -11,6 +11,9 @@ import BillingSuccess from '@/views/billing/BillingSuccess.vue'
 import BillingCancel from '@/views/billing/BillingCancel.vue'
 import DeleteAccount from '@/views/account/DeleteAccount.vue'
 import GoodbyeComplete from '@/views/account/GoodbyeComplete.vue'
+import LiveAnalyze from '@/views/LiveAnalyze.vue'
+import Subscriptions from '@/views/Subscriptions.vue'
+import AnalyzeHistory from '@/views/AnalyzeHistory.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
@@ -25,6 +28,9 @@ const routes = [
   { path: '/billingcancel', name: 'BillingCancel', component: BillingCancel },
   { path: '/delete-account', name: 'DeleteAccount', component: DeleteAccount },
   { path: '/goodbye-complete', name: 'GoodbyeComplete', component: GoodbyeComplete },
+  { path: '/live-analyze', name: 'LiveAnalyze', component: LiveAnalyze },
+  { path: '/subscriptions', name: 'Subscriptions', component: Subscriptions },
+  { path: '/history', name: 'AnalyzeHistory', component: AnalyzeHistory },
 ]
 
 const router = createRouter({

@@ -112,3 +112,18 @@ def test_cancel_stripe(email: str):
 from routes.analyze import router as analyze_router
 app.include_router(analyze_router, prefix="/api/analyze")
 
+
+from models.analysis_log_model import AnalysisLog  # ✅ OK
+
+
+@app.get("/api/analysis/history")
+def get_analysis_history(email: str, db: Session = Depends(get_db)):
+    user_id = get_user_id_by_email(email)
+    if user_id is None:
+        raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
+
+    logs = db.query(AnalysisLog).filter_by(user_id=user_id).order_by(AnalysisLog.analyzed_at.desc()).all()
+    return [log.to_dict() for log in logs]
+
+
+

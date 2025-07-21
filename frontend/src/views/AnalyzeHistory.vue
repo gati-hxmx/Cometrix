@@ -15,12 +15,19 @@
       >
         <div class="flex justify-between items-center">
           <div class="text-sm text-gray-500">{{ formatDate(log.analyzed_at) }}</div>
-          <span class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800 capitalize">
-            {{ log.platform }}
-          </span>
+<span
+  class="text-xs px-2 py-1 rounded capitalize"
+  :class="platformClass(log.platform)"
+>
+  {{ log.platform }}
+</span>
+
         </div>
         <div class="mt-2">
-          <p class="font-semibold text-lg">{{ log.video_title || '（タイトルなし）' }}</p>
+          <p class="font-semibold text-lg">
+  {{ isValidTitle(log.video_title) ? log.video_title : '（タイトルなし）' }}
+</p>
+
           <a
             :href="log.video_url"
             target="_blank"
@@ -49,9 +56,11 @@ const userStore = useUserStore()
 onMounted(async () => {
   if (!userStore.email) return
   try {
-    const res = await fetch(`http://localhost:8000/api/analysis-logs?email=${userStore.email}`)
+    const res = await fetch(`http://localhost:8000/api/analysis/history?email=${userStore.email}`)
     if (res.ok) {
-      logs.value = await res.json()
+      const json = await res.json()
+      console.log('[debug] logs:', json) // ← ここ追加
+      logs.value = json
     } else {
       console.error('Failed to fetch logs')
     }
@@ -59,6 +68,8 @@ onMounted(async () => {
     console.error(e)
   }
 })
+
+
 
 function formatDate(dateStr) {
   const date = new Date(dateStr)
@@ -71,6 +82,22 @@ function formatDuration(sec) {
   const s = sec % 60
   return `${h}時間${m}分${s}秒`
 }
+
+function isValidTitle(title) {
+  return !!title && title.trim() !== ''
+}
+
+function platformClass(platform) {
+  if (platform === 'youtube') {
+    return 'bg-red-100 text-red-700'
+  } else if (platform === 'twitch') {
+    return 'bg-purple-100 text-purple-700'
+  } else {
+    return 'bg-gray-200 text-gray-800'
+  }
+}
+
+
 </script>
 
 <style scoped>

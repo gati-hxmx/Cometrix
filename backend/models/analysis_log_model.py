@@ -16,3 +16,15 @@ class AnalysisLog(Base):
     comment_count = Column(Integer)
     duration_sec = Column(Integer)
     result_path = Column(Text)
+
+    def to_dict(self):
+        return {
+            "video_url": self.video_url,
+            "video_title": self.video_title,
+            "platform": self.platform,
+            "analyzed_at": self.analyzed_at.isoformat(),
+            "comment_count": self.comment_count,
+            "duration_sec": self.duration_sec,
+        }
+
+
