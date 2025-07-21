@@ -90,11 +90,7 @@ function parseVideoUrl(url) {
 
             <!-- ✅ 契約中ユーザー向けの分析画面 -->
       <div v-else>
-        <!-- 🎥 動画URL入力と分析UI -->
-        <VideoUrlInput @submit="handleVideoIdSubmit" />
-        <!-- ... 以下すべて既存の分析UIを内包する -->
-        <!-- 既存の動画プレイヤー / チャットタブ / グラフ / 統計など -->
-        <!-- ※ここは既存の分析UIをそのまま入れてOK -->
+
 
 <!-- 横並び -->
 <div class="mt-6 flex gap-4 items-start">
@@ -158,9 +154,7 @@ function parseVideoUrl(url) {
 <!-- <ChatVolumeChart /> -->
   <TestChart />
 
-<div v-if="chat.videoId" class="mt-6">
-  <p>取得した動画ID: <strong>{{ chat.videoId }}</strong></p>
-</div>
+
 
 
   </div>

@@ -9,9 +9,9 @@
       >
         <!-- 左: ハンバーガー + ロゴ -->
         <div class="flex items-center space-x-4">
-          <!-- ハンバーガーメニュー -->
           <button
             v-if="isLoggedIn"
+            @click.stop="toggleMenu"
             @click.stop="toggleMenu"
             class="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded p-1"
           >
