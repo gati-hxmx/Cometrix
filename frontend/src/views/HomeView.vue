@@ -1,115 +1,139 @@
 <template>
   <DefaultLayout>
     <!-- Hero セクション -->
-    <section class="bg-cover bg-center bg-no-repeat py-32 text-center" style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('/hero-bg.png');">
-      <div class="px-6">
-        <div class="bg-black/50 backdrop-blur-sm rounded-lg p-8 text-white shadow-lg animate-fade-in">
-          <h1 class="text-4xl font-bold mb-4 leading-tight">
-            YouTube / Twitch ライブチャットを<br class="sm:hidden" /><br>
-            <span class="text-blue-400">可視化・分析</span> する
-          </h1>
-          <p class="text-lg mb-6 text-gray-200">
-            Cometrixは、配信アーカイブのチャットをグラフとリストで見やすく分析できるツールです。
-          </p>
-          <RouterLink
-            to="/analyze"
-            class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded text-lg transition shadow-md"
-          >
-            <span class="mr-2">🚀</span> 分析をはじめる
-          </RouterLink>
-        </div>
+    <section class="relative py-32 overflow-hidden bg-white">
+      <img
+        src="@/components/icons/TOP1.png"
+        alt="チャット分析イメージ"
+        class="absolute top-0 right-0 w-full max-w-xl object-contain z-0 mt-12 opacity-90 pointer-events-none"
+      />
+      <div class="relative z-10 max-w-5xl px-6 text-left">
+        <h2
+          class="text-4xl sm:text-4xl font-extrabold text-gray-900 mb-6 leading-tight tracking-tight"
+        >
+          アーカイブ動画のチャット分析で<br />
+          こんな課題はありませんか？
+        </h2>
+        <p class="text-lg text-gray-600 mb-8">
+          鬱憤アーカイブのチャットを傾向に紐づけ。<br />喋り過ぎの失敗を把握しよう。
+        </p>
+        <RouterLink
+          to="/analyze"
+          class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-3 px-6 rounded shadow-md transition duration-200"
+        >
+          🚀 今すぐ試してみる
+        </RouterLink>
       </div>
     </section>
 
     <!-- 機能紹介 -->
-    <section class="py-16 bg-white">
-      <div class="max-w-4xl mx-auto px-4 text-center">
-        <h2 class="text-2xl font-semibold mb-8">主な機能</h2>
+    <section class="bg-gray-50 py-20 px-6">
+      <div class="max-w-6xl mx-auto text-center">
+        <h2 class="text-3xl font-bold mb-12 text-gray-800">
+          Cometrix の主な機能
+        </h2>
         <div class="grid sm:grid-cols-3 gap-8">
-          <div class="hover:shadow-md hover:-translate-y-1 transition rounded p-4">
-            <div class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-              <BarChart class="w-6 h-6 text-blue-600" />
-            </div>
-            <p class="text-xl font-bold text-blue-600 mb-1">グラフ可視化</p>
-            <p class="text-sm text-gray-600">30秒ごとのチャット数を棒グラフで表示</p>
+          <div
+            class="bg-white rounded-xl shadow hover:shadow-lg p-6 transition-transform hover:-translate-y-1"
+          >
+            <BarChart class="mx-auto text-blue-600 w-10 h-10 mb-4" />
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">
+              グラフ可視化
+            </h3>
+            <p class="text-sm text-gray-600">
+              30秒ごとのチャット数を棒グラフで可視化
+            </p>
           </div>
-          <div class="hover:shadow-md hover:-translate-y-1 transition rounded p-4">
-            <div class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-              <MessagesSquare class="w-6 h-6 text-blue-600" />
-            </div>
-            <p class="text-xl font-bold text-blue-600 mb-1">チャット一覧</p>
-            <p class="text-sm text-gray-600">ユーザー・コメント・タイムスタンプを時系列に表示</p>
+          <div
+            class="bg-white rounded-xl shadow hover:shadow-lg p-6 transition-transform hover:-translate-y-1"
+          >
+            <MessagesSquare class="mx-auto text-blue-600 w-10 h-10 mb-4" />
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">
+              チャット一覧
+            </h3>
+            <p class="text-sm text-gray-600">
+              コメント・ユーザー・タイムスタンプを時系列で表示
+            </p>
           </div>
-          <div class="hover:shadow-md hover:-translate-y-1 transition rounded p-4">
-            <div class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Link2 class="w-6 h-6 text-blue-600" />
-            </div>
-            <p class="text-xl font-bold text-blue-600 mb-1">URL貼るだけ</p>
-            <p class="text-sm text-gray-600">YouTube動画URLを入力するだけですぐ分析</p>
+          <div
+            class="bg-white rounded-xl shadow hover:shadow-lg p-6 transition-transform hover:-translate-y-1"
+          >
+            <Link2 class="mx-auto text-blue-600 w-10 h-10 mb-4" />
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">
+              URL貼るだけ分析
+            </h3>
+            <p class="text-sm text-gray-600">
+              YouTubeやTwitchのURLを貼るだけですぐ分析
+            </p>
           </div>
         </div>
       </div>
     </section>
 
     <!-- 対応サービス -->
-    <section class="py-12 bg-white border-t border-gray-100">
+    <section class="py-16 bg-white border-t border-gray-100">
       <div class="max-w-4xl mx-auto px-4 text-center">
-        <h2 class="text-2xl font-semibold mb-8 text-gray-800">対応サイト</h2>
+        <h2 class="text-2xl font-bold mb-8 text-gray-800">対応サイト</h2>
         <div class="flex justify-center items-center gap-12 flex-wrap">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube" class="h-8 opacity-80 hover:opacity-100 transition" />
-          <img src="/twitch_wordmark_extruded_purple.svg" alt="Twitch" class="h-8 opacity-80 hover:opacity-100 transition" />
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg"
+            alt="YouTube"
+            class="h-8 opacity-80 hover:opacity-100 transition"
+          />
+          <img
+            src="/twitch_wordmark_extruded_purple.svg"
+            alt="Twitch"
+            class="h-8 opacity-80 hover:opacity-100 transition"
+          />
         </div>
       </div>
     </section>
 
     <!-- プラン紹介 -->
-    <section class="py-16 bg-gray-50">
-      <div class="max-w-6xl mx-auto px-4 text-center">
-        <h2 class="text-2xl font-semibold mb-6">プラン比較</h2>
-        <div class="grid sm:grid-cols-3 gap-6">
-          <div class="bg-white border rounded-lg p-6 shadow-sm">
-            <h3 class="text-xl font-bold mb-2 text-gray-800">Free Plan</h3>
-            <p class="text-sm text-gray-500 mb-4">¥0 / 月</p>
-            <ul class="text-sm text-gray-600 space-y-1">
-              <li>✅ 月3本まで分析可能</li>
-              <li>✅ 基本機能のみ</li>
-              <li>❌ 高度な分析機能</li>
-            </ul>
-          </div>
-          <div class="relative bg-white border border-blue-500 rounded-lg p-6 shadow-md">
-            <span class="absolute top-4 right-4 text-xs bg-blue-600 text-white px-2 py-1 rounded-full">おすすめ</span>
-            <h3 class="text-xl font-bold mb-2 text-blue-600">Pro Plan（月額）</h3>
-            <p class="text-sm text-gray-500 mb-4">¥600 / 月</p>
-            <ul class="text-sm text-gray-600 space-y-1 mb-4">
-              <li>✅ 無制限に分析可能</li>
-              <li>✅ 全機能利用可</li>
-              <li>✅ 優先サポート</li>
-            </ul>
-            <RouterLink
-              to="/mypage"
-              class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
+    <section class="py-24 bg-gray-50">
+      <div
+        class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center gap-10"
+      >
+        <!-- 左側画像 -->
+        <div class="w-full md:w-1/2">
+          <img
+            src="@/components/icons/TOP2.png"
+            alt="プランイメージ"
+            class="w-full max-w-md mx-auto object-contain"
+          />
+        </div>
+
+        <!-- 右側テキスト -->
+        <div class="w-full md:w-1/2 relative z-10">
+          <h2
+            class="text-3xl font-bold text-gray-900 mb-4 flex items-center gap-3"
+          >
+            有料プラン
+            <span
+              class="bg-blue-100 text-blue-600 text-sm font-semibold px-3 py-1 rounded-full"
+              >月 ¥780</span
             >
-              月額でアップグレード
-            </RouterLink>
-          </div>
-          <div class="relative bg-white border border-blue-500 rounded-lg p-6 shadow-md">
-            <h3 class="text-xl font-bold mb-2 text-blue-600">Pro Plan（年間）</h3>
-            <p class="text-sm text-gray-500 mb-4">
-              ¥5,900 / 年<br />
-              <span class="inline-block text-green-700 font-semibold bg-green-100 px-2 py-0.5 rounded text-xs">2ヶ月分お得！</span>
-            </p>
-            <ul class="text-sm text-gray-600 space-y-1 mb-4">
-              <li>✅ 無制限に分析可能</li>
-              <li>✅ 全機能利用可</li>
-              <li>✅ 優先サポート</li>
-            </ul>
-            <RouterLink
-              to="/mypage"
-              class="inline-block bg-blue-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
-            >
-              年間でアップグレード
-            </RouterLink>
-          </div>
+          </h2>
+          <ul class="space-y-4 text-gray-700 text-base">
+            <li class="flex items-center gap-3">
+              <Check class="text-blue-500 w-5 h-5" /> 分析回数無制限
+            </li>
+            <li class="flex items-center gap-3">
+              <BarChart class="text-blue-500 w-5 h-5" /> 高度なチャート分析
+            </li>
+            <li class="flex items-center gap-3">
+              <Bookmark class="text-blue-500 w-5 h-5" /> メモ・保存機能つき
+            </li>
+            <li class="flex items-center gap-3">
+              <LifeBuoy class="text-blue-500 w-5 h-5" /> 優先サポート
+            </li>
+          </ul>
+          <RouterLink
+            to="/mypage"
+            class="mt-8 inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded shadow transition duration-200"
+          >
+            今すぐアップグレード
+          </RouterLink>
         </div>
       </div>
     </section>
@@ -117,16 +141,13 @@
 </template>
 
 <script setup>
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { BarChart, MessagesSquare, Link2 } from 'lucide-vue-next'
+import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import {
+  BarChart,
+  MessagesSquare,
+  Link2,
+  Check,
+  Bookmark,
+  LifeBuoy,
+} from "lucide-vue-next";
 </script>
-
-<style scoped>
-@keyframes fade-in {
-  0% { opacity: 0; transform: translateY(10px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-  animation: fade-in 0.8s ease-out;
-}
-</style>

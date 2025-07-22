@@ -4,12 +4,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def get_twitch_access_token(client_id: str, client_secret: str) -> str:
     url = "https://id.twitch.tv/oauth2/token"
     data = {
         "client_id": client_id,
         "client_secret": client_secret,
-        "grant_type": "client_credentials"
+        "grant_type": "client_credentials",
     }
     response = requests.post(url, data=data)
     response.raise_for_status()
@@ -18,10 +19,7 @@ def get_twitch_access_token(client_id: str, client_secret: str) -> str:
 
 def get_twitch_thumbnail_url(video_id: str, client_id: str, access_token: str) -> str:
     url = f"https://api.twitch.tv/helix/videos?id={video_id}"
-    headers = {
-        "Client-ID": client_id,
-        "Authorization": f"Bearer {access_token}"
-    }
+    headers = {"Client-ID": client_id, "Authorization": f"Bearer {access_token}"}
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     data = response.json()
@@ -32,3 +30,14 @@ def get_twitch_thumbnail_url(video_id: str, client_id: str, access_token: str) -
     except (IndexError, KeyError):
         return None
 
+
+def get_twitch_video_title(video_id: str, client_id: str, access_token: str) -> str:
+    url = f"https://api.twitch.tv/helix/videos?id={video_id}"
+    headers = {"Client-ID": client_id, "Authorization": f"Bearer {access_token}"}
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    data = response.json()
+    try:
+        return data["data"][0]["title"]
+    except (IndexError, KeyError):
+        return "Unknown Title"

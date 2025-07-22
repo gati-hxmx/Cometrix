@@ -95,96 +95,99 @@ const handleVideoIdSubmit = async ({ platform, videoId }) => {
 </script>
 
 <template>
-  <DefaultLayout>
-    <main class="px-8">
-      <!-- ✅ ガード：未契約状態なら警告だけ表示 -->
-      <div
-        v-if="
-          !subscription ||
-          ['inactive', 'canceled'].includes(subscription.status)
-        "
-        class="text-center text-gray-600"
-      >
-        <p class="text-xl font-semibold mb-2">
-          ご利用にはサブスクリプション契約が必要です
-        </p>
-        <router-link to="/mypage" class="text-blue-600 hover:underline"
-          >マイページから契約してください</router-link
+  <div class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <DefaultLayout>
+      <main class="px-8">
+        <!-- ✅ ガード：未契約状態なら警告だけ表示 -->
+        <div
+          v-if="
+            !subscription ||
+            ['inactive', 'canceled'].includes(subscription.status)
+          "
+          class="text-center text-gray-600"
         >
-      </div>
-
-      <!-- ✅ 契約中ユーザー向けの分析画面 -->
-      <div v-else>
-        <!-- 横並び -->
-        <div class="mt-6 flex gap-4 items-start">
-          <!-- 左：動画 -->
-          <div class="w-3/4">
-            <div class="aspect-video">
-              <YoutubePlayer v-if="chat.platform === 'youtube'" />
-              <TwitchPlayer v-else-if="chat.platform === 'twitch'" />
-
-              <div
-                v-else
-                class="flex items-center justify-center w-full h-full text-gray-500 text-sm"
-              >
-                ここに動画が表示されます
-              </div>
-            </div>
-          </div>
-
-          <!-- 右：チャットエリアをタブ付きにする -->
-          <div
-            class="w-1/4 overflow-hidden border rounded shadow bg-white"
-            style="height: calc((100vw * 0.6) * 0.6); max-height: 380px"
+          <p class="text-xl font-semibold mb-2">
+            ご利用にはサブスクリプション契約が必要です
+          </p>
+          <router-link to="/mypage" class="text-blue-600 hover:underline"
+            >マイページから契約してください</router-link
           >
-            <!-- タブヘッダー -->
-            <div class="flex border-b text-sm font-medium">
-              <button
-                v-for="tab in tabs"
-                :key="tab"
-                @click="activeTab = tab"
-                :class="[
-                  'flex-1 py-2 text-center hover:bg-gray-100',
-                  activeTab === tab ? 'bg-blue-100 font-bold' : 'bg-white',
-                ]"
-              >
-                {{ tab }}
-              </button>
+        </div>
+
+        <!-- ✅ 契約中ユーザー向けの分析画面 -->
+        <div v-else>
+          <!-- 横並び -->
+          <div class="mt-6 flex gap-4 items-start">
+            <!-- 左：動画 -->
+            <div class="w-3/4">
+              <div class="aspect-video">
+                <YoutubePlayer v-if="chat.platform === 'youtube'" />
+                <TwitchPlayer v-else-if="chat.platform === 'twitch'" />
+
+                <div
+                  v-else
+                  class="flex items-center justify-center w-full h-full text-gray-500 text-sm"
+                >
+                  ここに動画が表示されます
+                </div>
+              </div>
             </div>
 
-            <!-- タブの内容 -->
-            <div class="overflow-y-auto h-full">
-              <ChatList v-if="activeTab === 'チャット'" />
-              <div
-                v-else-if="activeTab === '字幕'"
-                class="p-4 text-sm text-gray-600"
-              >
-                字幕はまだ未実装です
+            <!-- 右：チャットエリアをタブ付きにする -->
+            <div
+              class="w-1/4 overflow-hidden border rounded shadow bg-white"
+              style="height: calc((100vw * 0.6) * 0.6); max-height: 380px"
+            >
+              <!-- タブヘッダー -->
+              <div class="flex border-b text-sm font-medium">
+                <button
+                  v-for="tab in tabs"
+                  :key="tab"
+                  @click="activeTab = tab"
+                  :class="[
+                    'flex-1 py-2 text-center hover:bg-gray-100',
+                    activeTab === tab ? 'bg-blue-100 font-bold' : 'bg-white',
+                  ]"
+                >
+                  {{ tab }}
+                </button>
               </div>
-              <div
-                v-else-if="activeTab === 'メモ'"
-                class="p-4 text-sm text-gray-600"
-              >
-                <MemoEditor />
+
+              <!-- タブの内容 -->
+              <div class="overflow-y-auto h-full">
+                <ChatList v-if="activeTab === 'チャット'" />
+                <div
+                  v-else-if="activeTab === '字幕'"
+                  class="p-4 text-sm text-gray-600"
+                >
+                  字幕はまだ未実装です
+                </div>
+                <div
+                  v-else-if="activeTab === 'メモ'"
+                  class="p-4 text-sm text-gray-600"
+                >
+                  <MemoEditor />
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="flex gap-3 mt-2">
-          <CommentStats />
-          <PlaybackTime />
-          <SeekControl />
+          <div class="flex gap-3 mt-2">
+            <CommentStats />
+            <PlaybackTime />
+            <SeekControl />
 
-          <div class="ml-auto">
-            <ChatFilter />
+            <div class="ml-auto">
+              <ChatFilter />
+            </div>
           </div>
-        </div>
 
-        <!-- <ChatVolumeChart /> -->
-        <TestChart />
-      </div>
-    </main>
-    <LoadingOverlay v-if="isLoading" />
-  </DefaultLayout>
+          <!-- <ChatVolumeChart /> -->
+          <TestChart />
+        </div>
+      </main>
+      <LoadingOverlay v-if="isLoading" />
+    </DefaultLayout>
+    ここがダークモード対応エリア
+  </div>
 </template>

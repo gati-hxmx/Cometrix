@@ -141,6 +141,8 @@
             <User class="w-5 h-5" />
             <span>マイページ</span>
           </RouterLink>
+
+          <!-- <DarkModeToggle class="mt-4" /> -->
         </div>
       </aside>
     </transition>
@@ -166,6 +168,7 @@ import {
   BarChart,
   Zap,
 } from "lucide-vue-next";
+import DarkModeToggle from "./common/DarkModeToggle.vue";
 
 const router = useRouter();
 const route = useRoute();
