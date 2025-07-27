@@ -14,6 +14,7 @@ import GoodbyeComplete from "@/views/account/GoodbyeComplete.vue";
 import LiveAnalyze from "@/views/LiveAnalyze.vue";
 import Subscriptions from "@/views/Subscriptions.vue";
 import AnalyzeHistory from "@/views/AnalyzeHistory.vue";
+import BillingHistory from "@/views/billing/BillingHistory.vue";
 
 const routes = [
   { path: "/", name: "Home", component: HomeView },
@@ -39,6 +40,11 @@ const routes = [
   { path: "/live-analyze", name: "LiveAnalyze", component: LiveAnalyze },
   { path: "/subscriptions", name: "Subscriptions", component: Subscriptions },
   { path: "/history", name: "AnalyzeHistory", component: AnalyzeHistory },
+  {
+    path: "/billing/history",
+    name: "BillingHistory",
+    component: BillingHistory,
+  },
 ];
 
 const router = createRouter({

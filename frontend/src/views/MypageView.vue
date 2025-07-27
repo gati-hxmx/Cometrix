@@ -1,27 +1,27 @@
 <script setup>
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { useUserStore } from '@/stores/user'
-import { computed, watchEffect } from 'vue'
+import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import { useUserStore } from "@/stores/user";
+import { computed, watchEffect } from "vue";
 
-const userStore = useUserStore()
+const userStore = useUserStore();
 
-const name = computed(() => userStore.name)
-const email = computed(() => userStore.email)
-const subscription = computed(() => userStore.subscription)
+const name = computed(() => userStore.name);
+const email = computed(() => userStore.email);
+const subscription = computed(() => userStore.subscription);
 
 watchEffect(async () => {
   if (email.value) {
-    await userStore.fetchSubscription()
+    await userStore.fetchSubscription();
   }
-})
+});
 
 function formatDate(dateStr) {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 async function handleUpgrade() {
@@ -30,66 +30,65 @@ async function handleUpgrade() {
       method: "POST",
       credentials: "include",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email: email.value })
-    })
-    const data = await res.json()
+      body: JSON.stringify({ email: email.value }),
+    });
+    const data = await res.json();
     if (data.url) {
-      window.location.href = data.url
+      window.location.href = data.url;
     } else {
-      alert("セッションURLが取得できませんでした")
+      alert("セッションURLが取得できませんでした");
     }
   } catch (error) {
-    console.error("Checkoutエラー:", error)
-    alert("通信エラーが発生しました")
+    console.error("Checkoutエラー:", error);
+    alert("通信エラーが発生しました");
   }
 }
 
 async function handleCancel() {
-  if (!confirm("本当に解約しますか？")) return
+  if (!confirm("本当に解約しますか？")) return;
 
   try {
     const res = await fetch("http://localhost:5001/cancel-subscription", {
       method: "POST",
       credentials: "include",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email: email.value })
-    })
-    const data = await res.json()
-    alert(data.message || "キャンセル処理を完了しました")
+      body: JSON.stringify({ email: email.value }),
+    });
+    const data = await res.json();
+    alert(data.message || "キャンセル処理を完了しました");
 
-    await userStore.fetchSubscription()
+    await userStore.fetchSubscription();
   } catch (error) {
-    console.error("キャンセルエラー:", error)
-    alert("通信エラーが発生しました")
+    console.error("キャンセルエラー:", error);
+    alert("通信エラーが発生しました");
   }
 }
 
 async function handleUncancel() {
-  if (!confirm("解約をキャンセルしますか？")) return
+  if (!confirm("解約をキャンセルしますか？")) return;
 
   try {
     const res = await fetch("http://localhost:5001/uncancel-subscription", {
       method: "POST",
       credentials: "include",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email: email.value })
-    })
-    const data = await res.json()
-    alert(data.message || "解約キャンセル処理を完了しました")
+      body: JSON.stringify({ email: email.value }),
+    });
+    const data = await res.json();
+    alert(data.message || "解約キャンセル処理を完了しました");
 
-    await userStore.fetchSubscription()
+    await userStore.fetchSubscription();
   } catch (error) {
-    console.error("解約キャンセルエラー:", error)
-    alert("通信エラーが発生しました")
+    console.error("解約キャンセルエラー:", error);
+    alert("通信エラーが発生しました");
   }
 }
-
 </script>
 
 <template>
@@ -107,18 +106,27 @@ async function handleUncancel() {
           </div>
         </div>
 
-        <div v-else class="text-gray-400 text-sm">ユーザー情報が取得できませんでした</div>
+        <div v-else class="text-gray-400 text-sm">
+          ユーザー情報が取得できませんでした
+        </div>
       </div>
 
       <div class="bg-white border rounded p-4 shadow-sm">
         <h2 class="font-semibold text-gray-700 mb-2">サブスクリプション</h2>
 
         <div v-if="subscription">
-          <p class="mb-1">プラン: <strong>{{ subscription.plan }}</strong></p>
-          <p class="text-sm text-gray-500 mb-4">状態: {{ subscription.status }}</p>
+          <p class="mb-1">
+            プラン: <strong>{{ subscription.plan }}</strong>
+          </p>
+          <p class="text-sm text-gray-500 mb-4">
+            状態: {{ subscription.status }}
+          </p>
 
           <button
-            v-if="subscription.status !== 'active' && subscription.status !== 'canceling'"
+            v-if="
+              subscription.status !== 'active' &&
+              subscription.status !== 'canceling'
+            "
             @click="handleUpgrade"
             class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded mr-2"
           >
@@ -126,14 +134,20 @@ async function handleUncancel() {
           </button>
 
           <button
-            v-if="subscription.status === 'active' || subscription.status === 'trialing'"
+            v-if="
+              subscription.status === 'active' ||
+              subscription.status === 'trialing'
+            "
             @click="handleCancel"
             class="bg-gray-600 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded"
           >
             解約する
           </button>
 
-          <p v-if="subscription.status === 'canceling'" class="text-sm text-orange-500">
+          <p
+            v-if="subscription.status === 'canceling'"
+            class="text-sm text-orange-500"
+          >
             解約予定（{{ formatDate(subscription.end_date) }}まで利用可能）
           </p>
 
@@ -145,22 +159,33 @@ async function handleUncancel() {
             解約をキャンセルする
           </button>
 
-
-
-
-          <p v-if="subscription.status === 'canceled'" class="text-sm text-red-500">
+          <p
+            v-if="subscription.status === 'canceled'"
+            class="text-sm text-red-500"
+          >
             解約済み（{{ formatDate(subscription.end_date) }}まで利用可能）
           </p>
         </div>
 
-        <div v-else class="text-sm text-gray-500">サブスクリプション情報を取得中...</div>
+        <div v-else class="text-sm text-gray-500">
+          サブスクリプション情報を取得中...
+        </div>
       </div>
 
       <div class="mt-8 text-center">
-  <router-link to="/delete-account" class="text-sm text-red-600 hover:underline">
-    アカウントを退会する
-  </router-link>
-</div>
+        <router-link
+          to="/billing/history"
+          class="text-sm text-blue-600 hover:underline block"
+        >
+          請求履歴を確認する
+        </router-link>
+        <router-link
+          to="/delete-account"
+          class="text-sm text-red-600 hover:underline"
+        >
+          アカウントを退会する
+        </router-link>
+      </div>
     </main>
   </DefaultLayout>
 </template>
