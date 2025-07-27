@@ -23,3 +23,7 @@ backend/TwitchDownloaderCLI
 backend/TwitchDownloaderCLI
 backend/chat_data/
 backend/node_modules/
+
+# Byte-compiled / cache
+__pycache__/
+*.pyc
