@@ -1,4 +1,4 @@
-#api_app.py
+# api_app.py
 
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,13 +29,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # --- Pydantic Schemas ---
 class ChatDataRequest(BaseModel):
     videoId: str
     email: str
 
+
 class DeleteRequest(BaseModel):
     email: str
+
 
 # --- YouTube チャット取得 ---
 @app.post("/api/chat-data")
@@ -48,7 +51,9 @@ def get_chat_data_post(data: ChatDataRequest):
         # ✅ 毎回 fetch_youtube_chat_data を通すことでログも必ず保存される
         return fetch_youtube_chat_data(video_id=data.videoId, user_id=user_id)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"チャットデータの取得に失敗しました: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"チャットデータの取得に失敗しました: {e}"
+        )
 
 
 # --- Twitch チャット取得 ---
@@ -72,18 +77,28 @@ def get_twitch_chat_data_post(data: ChatDataRequest):
 
     # ✅ なければダウンロードして整形
     try:
-        subprocess.run([
-            "./TwitchDownloaderCLI/TwitchDownloaderCLI", "chatdownload",
-            "--id", data.videoId,
-            "--output", raw_path
-        ], check=True)
+        subprocess.run(
+            [
+                "./TwitchDownloaderCLI/TwitchDownloaderCLI",
+                "chatdownload",
+                "--id",
+                data.videoId,
+                "--output",
+                raw_path,
+            ],
+            check=True,
+        )
     except subprocess.CalledProcessError as e:
-        raise HTTPException(status_code=500, detail=f"Twitchチャットのダウンロードに失敗しました: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Twitchチャットのダウンロードに失敗しました: {e}"
+        )
 
     try:
         return fetch_twitch_chat_data(raw_path, data.videoId, user_id)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Twitchチャットの整形に失敗しました: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Twitchチャットの整形に失敗しました: {e}"
+        )
 
 
 # --- 退会処理 ---
@@ -99,6 +114,7 @@ def delete_account(data: DeleteRequest, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"退会処理に失敗しました: {str(e)}")
 
+
 # --- Stripe サブスク即時キャンセル（テスト用） ---
 @app.post("/api/test-cancel-stripe")
 def test_cancel_stripe(email: str):
@@ -110,6 +126,7 @@ def test_cancel_stripe(email: str):
 
 
 from routes.analyze import router as analyze_router
+
 app.include_router(analyze_router, prefix="/api/analyze")
 
 
@@ -122,8 +139,15 @@ def get_analysis_history(email: str, db: Session = Depends(get_db)):
     if user_id is None:
         raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
 
-    logs = db.query(AnalysisLog).filter_by(user_id=user_id).order_by(AnalysisLog.analyzed_at.desc()).all()
+    logs = (
+        db.query(AnalysisLog)
+        .filter_by(user_id=user_id)
+        .order_by(AnalysisLog.analyzed_at.desc())
+        .all()
+    )
     return [log.to_dict() for log in logs]
 
 
+from routes import billing
 
+app.include_router(billing.router)
