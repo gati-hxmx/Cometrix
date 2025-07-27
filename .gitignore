@@ -27,3 +27,6 @@ backend/node_modules/
 # Byte-compiled / cache
 __pycache__/
 *.pyc
+
+
+backend/tmp_clips/
