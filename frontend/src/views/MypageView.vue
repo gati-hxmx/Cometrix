@@ -166,8 +166,6 @@ async function handleUpgrade() {
     const res = await fetch(`${STRIPE_API_BASE}/create-checkout-session`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.value }),
     });
     const data = await res.json();
     if (data.url) window.location.href = data.url;
@@ -184,8 +182,6 @@ async function handleCancel() {
     const res = await fetch(`${STRIPE_API_BASE}/cancel-subscription`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.value }),
     });
     const data = await res.json();
     alert(data.message || "キャンセル完了");
@@ -202,8 +198,6 @@ async function handleUncancel() {
     const res = await fetch(`${STRIPE_API_BASE}/uncancel-subscription`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.value }),
     });
     const data = await res.json();
     alert(data.message || "キャンセル解除完了");

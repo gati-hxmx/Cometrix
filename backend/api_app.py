@@ -13,7 +13,7 @@ from services.yt_chat import fetch_chat_data as fetch_youtube_chat_data
 from services.twitch_chat import fetch_chat_data as fetch_twitch_chat_data
 from services.user_service import get_user_id_by_email
 from services.delete_service import delete_user_account
-from services.stripe_service import cancel_stripe_subscription_immediately
+from auth_dependency import get_current_email
 
 # --- DB ---
 from sqlalchemy_db import get_db
@@ -24,7 +24,8 @@ CHAT_DATA_DIR = "chat_data"  # 保存先パス
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 必要に応じて制限
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -33,17 +34,12 @@ app.add_middleware(
 # --- Pydantic Schemas ---
 class ChatDataRequest(BaseModel):
     videoId: str
-    email: str
-
-
-class DeleteRequest(BaseModel):
-    email: str
 
 
 # --- YouTube チャット取得 ---
 @app.post("/api/chat-data")
-def get_chat_data_post(data: ChatDataRequest):
-    user_id = get_user_id_by_email(data.email)
+def get_chat_data_post(data: ChatDataRequest, email: str = Depends(get_current_email)):
+    user_id = get_user_id_by_email(email)
     if user_id is None:
         raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
 
@@ -58,8 +54,8 @@ def get_chat_data_post(data: ChatDataRequest):
 
 # --- Twitch チャット取得 ---
 @app.post("/api/chat-data/twitch")
-def get_twitch_chat_data_post(data: ChatDataRequest):
-    user_id = get_user_id_by_email(data.email)
+def get_twitch_chat_data_post(data: ChatDataRequest, email: str = Depends(get_current_email)):
+    user_id = get_user_id_by_email(email)
     if user_id is None:
         raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
 
@@ -103,8 +99,8 @@ def get_twitch_chat_data_post(data: ChatDataRequest):
 
 # --- 退会処理 ---
 @app.post("/api/delete-account")
-def delete_account(data: DeleteRequest, db: Session = Depends(get_db)):
-    user_id = get_user_id_by_email(data.email)
+def delete_account(db: Session = Depends(get_db), email: str = Depends(get_current_email)):
+    user_id = get_user_id_by_email(email)
     if not user_id:
         raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
 
@@ -113,16 +109,6 @@ def delete_account(data: DeleteRequest, db: Session = Depends(get_db)):
         return {"message": "アカウントを削除しました"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"退会処理に失敗しました: {str(e)}")
-
-
-# --- Stripe サブスク即時キャンセル（テスト用） ---
-@app.post("/api/test-cancel-stripe")
-def test_cancel_stripe(email: str):
-    try:
-        cancel_stripe_subscription_immediately(email)
-        return {"message": f"{email} のサブスクリプションを即時キャンセルしました"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"キャンセル失敗: {str(e)}")
 
 
 from routes.analyze import router as analyze_router
@@ -134,7 +120,7 @@ from models.analysis_log_model import AnalysisLog  # ✅ OK
 
 
 @app.get("/api/analysis/history")
-def get_analysis_history(email: str, db: Session = Depends(get_db)):
+def get_analysis_history(db: Session = Depends(get_db), email: str = Depends(get_current_email)):
     user_id = get_user_id_by_email(email)
     if user_id is None:
         raise HTTPException(status_code=404, detail="ユーザーが見つかりません")

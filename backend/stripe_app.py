@@ -10,6 +10,7 @@ from sqlalchemy_db import SessionLocal
 from models.user_model import User
 from models.subscription_model import Subscription
 from datetime import datetime
+from session_auth import verify_session, SessionAuthError
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
@@ -17,11 +18,20 @@ CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 print("[DEBUG] stripe_app.py loaded")
 
 
+def require_login():
+    """ログイン中のメールアドレスを返す。未ログインなら (None, エラーレスポンス) を返す。"""
+    try:
+        return verify_session(request.headers.get("Cookie")), None
+    except SessionAuthError as e:
+        return None, (jsonify({"error": str(e)}), 401)
+
+
 @app.route("/create-checkout-session", methods=["POST"])
 def checkout():
+    email, err = require_login()
+    if err:
+        return err
     try:
-        data = request.get_json()
-        email = data.get("email")
         session = create_checkout_session(email)
         return jsonify({"url": session.url})
     except Exception as e:
@@ -221,10 +231,10 @@ def stripe_webhook():
 
 @app.route("/cancel-subscription", methods=["POST"])
 def cancel_subscription():
+    email, err = require_login()
+    if err:
+        return err
     try:
-        data = request.get_json()
-        email = data.get("email")
-
         db = SessionLocal()
         user = db.query(User).filter_by(email=email).first()
         if not user:
@@ -267,10 +277,10 @@ def cancel_subscription():
 
 @app.route("/uncancel-subscription", methods=["POST"])
 def uncancel_subscription():
+    email, err = require_login()
+    if err:
+        return err
     try:
-        data = request.get_json()
-        email = data.get("email")
-
         db = SessionLocal()
         user = db.query(User).filter_by(email=email).first()
         if not user:

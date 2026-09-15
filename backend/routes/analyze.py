@@ -1,21 +1,21 @@
 # backend/routes/analyze.py
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from tasks.chat_tasks import analyze_youtube_chat_task, analyze_twitch_chat_task
 from celery.result import AsyncResult
 from celery_app import celery_app
 from services.user_service import get_user_id_by_email
+from auth_dependency import get_current_email
 
 router = APIRouter()
 
 class AnalyzeRequest(BaseModel):
     videoId: str
-    email: str
 
 
 @router.post("/youtube/async")
-def analyze_youtube_async(request: AnalyzeRequest):
-    user_id = get_user_id_by_email(request.email)
+def analyze_youtube_async(request: AnalyzeRequest, email: str = Depends(get_current_email)):
+    user_id = get_user_id_by_email(email)
     if user_id is None:
         raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
 
@@ -26,7 +26,7 @@ def analyze_youtube_async(request: AnalyzeRequest):
 
 
 @router.get("/task-status/{task_id}")
-def get_task_status(task_id: str):
+def get_task_status(task_id: str, email: str = Depends(get_current_email)):
     result = AsyncResult(task_id, app=celery_app)
     return {
         "task_id": task_id,
@@ -36,12 +36,11 @@ def get_task_status(task_id: str):
 
 class AnalyzeTwitchRequest(BaseModel):
     videoId: str
-    email: str
 
 
 @router.post("/twitch/async")
-def analyze_twitch_chat_async(request: AnalyzeTwitchRequest):
-    user_id = get_user_id_by_email(request.email)
+def analyze_twitch_chat_async(request: AnalyzeTwitchRequest, email: str = Depends(get_current_email)):
+    user_id = get_user_id_by_email(email)
     if user_id is None:
         raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
 

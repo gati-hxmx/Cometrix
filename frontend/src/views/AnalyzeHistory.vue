@@ -98,7 +98,8 @@ onMounted(async () => {
   if (!userStore.email) return;
   try {
     const res = await fetch(
-      `${ANALYZE_API_BASE}/api/analysis/history?email=${userStore.email}`
+      `${ANALYZE_API_BASE}/api/analysis/history`,
+      { credentials: "include" }
     );
     if (res.ok) {
       const json = await res.json();

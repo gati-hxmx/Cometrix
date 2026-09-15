@@ -1,6 +1,5 @@
 // stores/chat.js
 import { defineStore } from 'pinia'
-import { useUserStore } from '@/stores/user'  // 👈 追加：ユーザー情報を取得
 import { ANALYZE_API_BASE } from '@/config/api'
 
 export const useChatStore = defineStore('chat', {
@@ -92,9 +91,6 @@ filteredVolumePer30s(state) {
       this.loading = true
       this.error = null
 
-      const userStore = useUserStore()
-      const email = userStore.email
-
       try {
         let url, res, data
 
@@ -102,8 +98,9 @@ filteredVolumePer30s(state) {
       if (platform === 'twitch') {
         const jobRes = await fetch(`${ANALYZE_API_BASE}/api/analyze/twitch/async`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoId, email }),
+          body: JSON.stringify({ videoId }),
         })
         if (!jobRes.ok) throw new Error('Twitchジョブ登録に失敗しました')
         const { task_id } = await jobRes.json()
@@ -111,7 +108,7 @@ filteredVolumePer30s(state) {
         let attempts = 0
         let result = null
         while (attempts < 60) {
-          const statusRes = await fetch(`${ANALYZE_API_BASE}/api/analyze/task-status/${task_id}`)
+          const statusRes = await fetch(`${ANALYZE_API_BASE}/api/analyze/task-status/${task_id}`, { credentials: 'include' })
           const statusJson = await statusRes.json()
 
           if (statusJson.status === 'SUCCESS' && statusJson.result) {
@@ -139,8 +136,9 @@ filteredVolumePer30s(state) {
         const jobRes = await fetch(`${ANALYZE_API_BASE}/api/analyze/youtube/async`, {
 
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoId, email })
+          body: JSON.stringify({ videoId })
         })
         if (!jobRes.ok) throw new Error('ジョブ登録に失敗しました')
         const { task_id } = await jobRes.json()
@@ -149,7 +147,7 @@ filteredVolumePer30s(state) {
         let attempts = 0
         let result = null
         while (attempts < 60) {
-          const statusRes = await fetch(`${ANALYZE_API_BASE}/api/analyze/task-status/${task_id}`)
+          const statusRes = await fetch(`${ANALYZE_API_BASE}/api/analyze/task-status/${task_id}`, { credentials: 'include' })
           const statusJson = await statusRes.json()
 
           if (statusJson.status === 'SUCCESS' && statusJson.result) {

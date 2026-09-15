@@ -48,19 +48,17 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
-import { useUserStore } from "@/stores/user";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import { ANALYZE_API_BASE } from "@/config/api";
 
-const userStore = useUserStore();
 const history = ref([]);
 const loading = ref(true);
 
 onMounted(async () => {
   try {
     const { data } = await axios.get(
-      `${import.meta.env.VITE_API_URL}/api/billing/history?email=${
-        userStore.email
-      }`
+      `${ANALYZE_API_BASE}/api/billing/history`,
+      { withCredentials: true }
     );
     history.value = data;
   } catch (err) {

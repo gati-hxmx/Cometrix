@@ -1,12 +1,9 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import { ANALYZE_API_BASE } from '@/config/api'
 
-
 const router = useRouter()
-const userStore = useUserStore()
 
 async function handleDelete() {
   const confirmed = confirm("本当にアカウントを削除してもよろしいですか？この操作は取り消せません。")
@@ -15,10 +12,7 @@ async function handleDelete() {
   try {
     const res = await fetch(`${ANALYZE_API_BASE}/api/delete-account`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email: userStore.email })
+      credentials: "include",
     })
 
     if (!res.ok) {
