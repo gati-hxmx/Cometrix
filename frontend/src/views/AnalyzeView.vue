@@ -5,7 +5,6 @@ import VideoUrlInput from "@/components/analyze/VideoUrlInput.vue";
 import { useChatStore } from "@/stores/chat";
 import YoutubePlayer from "@/components/analyze/YoutubePlayer.vue";
 import ChatList from "@/components/analyze/ChatList.vue";
-import ChatVolumeChart from "@/components/analyze/ChatVolumeChart.vue";
 import LoadingOverlay from "@/components/analyze/common/LoadingOverlay.vue";
 // AnalyzeView.vue の <script setup> の冒頭に以下を追加
 import TestChart from "./TestChart.vue";
@@ -116,6 +115,13 @@ const handleVideoIdSubmit = async ({ platform, videoId }) => {
 
         <!-- ✅ 契約中ユーザー向けの分析画面 -->
         <div v-else>
+          <div
+            v-if="chat.error"
+            class="mt-4 p-3 rounded bg-red-50 border border-red-200 text-red-700 text-sm"
+          >
+            分析に失敗しました: {{ chat.error }}
+          </div>
+
           <!-- 横並び -->
           <div class="mt-6 flex gap-4 items-start">
             <!-- 左：動画 -->
@@ -182,7 +188,6 @@ const handleVideoIdSubmit = async ({ platform, videoId }) => {
             </div>
           </div>
 
-          <!-- <ChatVolumeChart /> -->
           <TestChart />
         </div>
       </main>

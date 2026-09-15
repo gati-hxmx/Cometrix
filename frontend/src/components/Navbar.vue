@@ -115,14 +115,14 @@
             <span>LIVE分析</span>
           </RouterLink> -->
 
-          <RouterLink
+          <!-- <RouterLink
             to="/subscriptions"
             class="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100"
             :class="{ 'bg-gray-100': $route.path === '/subscriptions' }"
           >
             <Tv class="w-5 h-5" />
             <span>登録チャンネル</span>
-          </RouterLink>
+          </RouterLink> -->
 
           <RouterLink
             to="/history"
