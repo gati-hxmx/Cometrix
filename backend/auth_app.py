@@ -50,7 +50,7 @@ def index():
     user_store[user.id] = user
     login_user(user)
     upsert_user(user.id, user.name, user.email, user.profile_image_url, user.last_login_at)
-    upsert_subscription(user.id)
+    upsert_subscription(user.db_id)
     return redirect("http://localhost:5173/")
 
 @app.route("/login/google/authorized")
@@ -72,7 +72,7 @@ def google_authorized():
     user_store[user.id] = user
     login_user(user)
     upsert_user(user.id, user.name, user.email, user.profile_image_url, user.last_login_at)
-    upsert_subscription(user.id)
+    upsert_subscription(user.db_id)
     return redirect("http://localhost:5173/")
 
 @app.route("/api/userinfo")

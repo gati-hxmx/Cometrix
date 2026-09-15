@@ -20,7 +20,7 @@ load_dotenv()
 # グローバル変数で使い回し（60日間有効）
 TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 TWITCH_CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
-TWITCH_ACCESS_TOKEN = get_twitch_access_token(TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET)
+#TWITCH_ACCESS_TOKEN = get_twitch_access_token(TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CHAT_DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "chat_data"))
@@ -32,6 +32,14 @@ os.makedirs(CHAT_DATA_DIR, exist_ok=True)
 
 
 def fetch_chat_data(json_path: str, video_id: str, user_id: int) -> Dict:
+
+    if not TWITCH_CLIENT_ID or not TWITCH_CLIENT_SECRET:
+        raise RuntimeError("Twitch の認証情報が未設定です")
+
+    access_token = get_twitch_access_token(
+        TWITCH_CLIENT_ID,
+        TWITCH_CLIENT_SECRET,
+    )
     # ✅ JSONファイルが存在しない場合、CLIで取得
     if not os.path.exists(json_path):
         try:

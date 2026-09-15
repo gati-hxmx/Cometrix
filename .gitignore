@@ -31,3 +31,9 @@ __pycache__/
 
 
 backend/tmp_clips/
+
+# macOS
+.DS_Store
+
+# 誤ってコミットされていた.NET SDK(プロジェクトでは未使用)
+dotnet-sdk-6.0.428-osx-arm64/

@@ -34,6 +34,11 @@ const chartData = computed(() => ({
 const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
+  onClick: (event, elements) => {
+    if (elements.length === 0) return
+    const bucket = chat.volumePer30s[elements[0].index]
+    if (bucket) chat.setSelectedTimestamp(bucket.start_str)
+  },
   scales: {
     x: {
       title: { display: true, text: '時間（配信内）' },
