@@ -39,7 +39,7 @@
             <input
               v-model="videoUrl"
               type="text"
-              placeholder="YouTubeまたはTwitchのURLを入力"
+              placeholder="YouTubeのURLを入力"
               class="flex-1 px-4 py-2 text-sm focus:outline-none border-none"
             />
             <button

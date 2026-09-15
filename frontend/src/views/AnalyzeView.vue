@@ -46,10 +46,7 @@ const route = useRoute();
 onMounted(() => {
   const videoUrl = route.query.video;
   if (videoUrl && typeof videoUrl === "string") {
-    const { platform, videoId } = parseVideoUrl(videoUrl);
-    if (platform && videoId) {
-      handleVideoIdSubmit({ platform, videoId });
-    }
+    handleParsedUrl(videoUrl);
   }
 });
 
@@ -67,15 +64,23 @@ function parseVideoUrl(url) {
   }
 }
 
+function handleParsedUrl(videoUrl) {
+  const { platform, videoId } = parseVideoUrl(videoUrl);
+  if (platform === "twitch") {
+    chat.error = "Twitchは現在未対応です。YouTubeのURLをご利用ください。";
+    return;
+  }
+  if (platform && videoId) {
+    handleVideoIdSubmit({ platform, videoId });
+  }
+}
+
 // クエリの変化を監視
 watch(
   () => route.query.video,
   (newVideoUrl, oldVideoUrl) => {
     if (newVideoUrl && newVideoUrl !== oldVideoUrl) {
-      const { platform, videoId } = parseVideoUrl(newVideoUrl);
-      if (platform && videoId) {
-        handleVideoIdSubmit({ platform, videoId });
-      }
+      handleParsedUrl(newVideoUrl);
     }
   }
 );
