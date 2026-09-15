@@ -2,6 +2,8 @@
 
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import { AUTH_API_BASE } from '@/config/api'
+import router from '@/router'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -15,7 +17,7 @@ export const useUserStore = defineStore('user', {
   actions: {
     async fetchUser() {
       try {
-        const res = await axios.get('http://localhost:5000/api/user', { withCredentials: true })
+        const res = await axios.get(`${AUTH_API_BASE}/api/user`, { withCredentials: true })
         this.name = res.data.name
         this.email = res.data.email
       } catch {
@@ -25,7 +27,7 @@ export const useUserStore = defineStore('user', {
     },
     async fetchSubscription() {
       try {
-        const res = await axios.get('http://localhost:5000/api/subscription', {
+        const res = await axios.get(`${AUTH_API_BASE}/api/subscription`, {
           withCredentials: true
         })
         console.log('📦 subscription fetched:', res.data)  // ← 追加
@@ -38,7 +40,7 @@ export const useUserStore = defineStore('user', {
 ,
     async logout() {
       try {
-        await axios.get('http://localhost:5000/logout', {
+        await axios.get(`${AUTH_API_BASE}/logout`, {
           withCredentials: true
         })
 
@@ -46,7 +48,6 @@ export const useUserStore = defineStore('user', {
         this.email = null
         this.subscription = null  // ← 忘れず初期化！
 
-        const router = useRouter()
         router.push('/')
       } catch (e) {
         console.error('ログアウトに失敗しました', e)

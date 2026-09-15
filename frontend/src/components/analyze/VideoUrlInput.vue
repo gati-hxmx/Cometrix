@@ -5,7 +5,7 @@
             <!-- YouTube -->
       <div class="flex items-center gap-3">
         <img
-          src="/Users/uedahayato/Develp/Cometrix/commetrix/frontend/src/assets/yt_logo_rgb_light.png"
+          src="@/assets/yt_logo_rgb_light.png"
           alt="YouTube"
           class="h-4"
         />
@@ -14,7 +14,7 @@
       <!-- Twitch -->
       <div class="flex items-center gap-3">
         <img
-          src="/Users/uedahayato/Develp/Cometrix/commetrix/frontend/src/assets/glitch_flat_purple.svg"
+          src="@/assets/glitch_flat_purple.svg"
           alt="Twitch"
           class="h-6"
         />
@@ -41,6 +41,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { ANALYZE_API_BASE } from '@/config/api'
 
 const url = ref('')
 const errorMessage = ref('')
@@ -81,7 +82,7 @@ async function handleSubmit() {
   // 🔽 YouTubeの場合だけジョブ送信
   if (result.platform === 'youtube') {
     try {
-      const res = await fetch("http://localhost:8000/api/analyze/youtube/async", {
+      const res = await fetch(`${ANALYZE_API_BASE}/api/analyze/youtube/async`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -100,11 +101,11 @@ async function handleSubmit() {
 
   if (result.platform === 'twitch') {
   try {
-    const res = await fetch("http://localhost:8000/api/analyze/twitch/async", {
+    const res = await fetch(`${ANALYZE_API_BASE}/api/analyze/twitch/async`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        json_path: `/Users/uedahayato/Develp/Cometrix/commetrix/chat_data/twitch_${result.videoId}.json`,
+        json_path: `chat_data/twitch_${result.videoId}.json`,
         video_id: result.videoId,
         user_id: userStore.userId,
       }),
