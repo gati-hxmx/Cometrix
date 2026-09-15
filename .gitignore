@@ -8,8 +8,12 @@ __pycache__/
 
 # Virtual environment
 .venv/
+.venv*/
 env/
 venv/
+
+# pytest
+.pytest_cache/
 
 # VSCode
 .vscode/
@@ -24,6 +28,10 @@ backend/TwitchDownloaderCLI
 backend/TwitchDownloaderCLI
 backend/chat_data/
 backend/node_modules/
+
+# 実チャットデータ(配信の視聴者データを含むため常に除外)
+chat_data/
+**/chat_data/
 
 # Byte-compiled / cache
 __pycache__/

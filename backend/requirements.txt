@@ -27,6 +27,7 @@ prompt_toolkit==3.0.53
 psycopg2-binary==2.9.10
 pydantic==2.11.7
 pydantic_core==2.33.2
+pytest==9.1.1
 python-dateutil==2.8.2
 python-dotenv==1.1.1
 pytz==2022.1
