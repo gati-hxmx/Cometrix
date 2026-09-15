@@ -1,21 +1,16 @@
 # auth_app.py
-from flask import Flask, redirect, url_for, jsonify,request
+from flask import Flask, redirect, url_for, jsonify, request
 from flask_login import LoginManager, login_user, logout_user, current_user
 from flask_dance.contrib.google import google
 from config import Config
 from auth.oauth import create_google_blueprint
 from models.user import User
 from flask_cors import CORS
-from db_logic import upsert_user
-from db_logic import upsert_user, upsert_subscription
-from db_logic import get_active_subscription
-from flask import jsonify
-from flask_login import current_user
-from db_logic import get_user_db_id
+from db_logic import upsert_user, upsert_subscription, get_user_db_id
 from datetime import datetime
 from sqlalchemy_db import SessionLocal
 from models.subscription_model import Subscription
-from models.analysis_log_model import AnalysisLog  # 追加
+from models.analysis_log_model import AnalysisLog
 
 
 app = Flask(__name__)
@@ -53,27 +48,12 @@ def index():
     upsert_subscription(user.db_id)
     return redirect("http://localhost:5173/")
 
-@app.route("/login/google/authorized")
-def google_authorized():
-    print("📥 /login/google/authorized に到達")
-    if not google.authorized:
-        print("🟥 google.authorized = False")
-        return redirect("http://localhost:5173/")
-
-    resp = google.get("/oauth2/v2/userinfo")
-    if not resp.ok:
-        print("🟥 ユーザー情報取得に失敗:", resp.text)
-        return redirect("http://localhost:5173/login?error=auth_failed")
-
-    info = resp.json()
-    print("✅ ユーザー情報取得:", info)
-    user = User(id=info["id"], name=info["name"], email=info["email"])
-    user.db_id = get_user_db_id(user.id)
-    user_store[user.id] = user
-    login_user(user)
-    upsert_user(user.id, user.name, user.email, user.profile_image_url, user.last_login_at)
-    upsert_subscription(user.db_id)
-    return redirect("http://localhost:5173/")
+# 注意: Google OAuthのコールバックURL(/login/google/authorized)は
+# Flask-Danceのブループリントが google_bp 登録時(28行目)に自動で
+# 同じパスへ先に登録するため、ログイン成功後は google.authorized が
+# True になった状態でこの直後の index()(38行目, "/") にリダイレクトされる。
+# ここに /login/google/authorized 用の独自ビューを定義しても、
+# Flaskは同一URLに対して先に登録された方だけを使うため実行されない。
 
 @app.route("/api/userinfo")
 def userinfo():
@@ -101,8 +81,6 @@ def logout():
 
 # CORS
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
-
-from flask_login import current_user
 
 
 @app.route("/api/subscription")

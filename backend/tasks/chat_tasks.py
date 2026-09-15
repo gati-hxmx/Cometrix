@@ -1,13 +1,7 @@
-from celery import Celery
 from services.yt_chat import analyze_youtube_chat
 import os
 from services.twitch_chat import fetch_chat_data
-
-celery_app = Celery(
-    "cometrix",
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0"
-)
+from celery_app import celery_app
 
 @celery_app.task
 def analyze_youtube_chat_task(video_url: str, user_id: str = None):
