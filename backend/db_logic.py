@@ -48,10 +48,11 @@ def upsert_subscription(user_id):
             """, (user_id,))
             print(f"✅ サブスクリプション（更新）: user_id={user_id}")
         else:
-            # 存在しない → 新規登録
+            # 存在しない → 新規登録(未課金状態。'active'にすると
+            # 分析画面のペイウォールを素通りしてしまうため'inactive'にする)
             cur.execute("""
                 INSERT INTO subscriptions (user_id, plan, status)
-                VALUES (%s, 'free', 'active')
+                VALUES (%s, 'free', 'inactive')
             """, (user_id,))
             print(f"✅ サブスクリプション（新規登録）: user_id={user_id}")
 

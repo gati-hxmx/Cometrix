@@ -80,7 +80,7 @@
             v-if="subscription.status === 'canceled'"
             class="text-sm text-red-500 mt-4"
           >
-            解約済み（{{ formatDate(subscription.end_date) }}まで利用可能）
+            解約済み（{{ formatDate(subscription.end_date) }}に終了しました）
           </p>
 
           <!-- 請求履歴リンク -->
