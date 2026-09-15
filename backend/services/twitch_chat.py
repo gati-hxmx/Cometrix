@@ -17,10 +17,8 @@ from services.twitch_api import (
 
 load_dotenv()
 
-# グローバル変数で使い回し（60日間有効）
 TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 TWITCH_CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
-#TWITCH_ACCESS_TOKEN = get_twitch_access_token(TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CHAT_DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "chat_data"))
@@ -97,9 +95,9 @@ def fetch_chat_data(json_path: str, video_id: str, user_id: int) -> Dict:
         )
 
     # ✅ タイトル・サムネ取得
-    title = get_twitch_video_title(video_id, TWITCH_CLIENT_ID, TWITCH_ACCESS_TOKEN)
+    title = get_twitch_video_title(video_id, TWITCH_CLIENT_ID, access_token)
     thumbnail_url = get_twitch_thumbnail_url(
-        video_id, TWITCH_CLIENT_ID, TWITCH_ACCESS_TOKEN
+        video_id, TWITCH_CLIENT_ID, access_token
     )
     video_url = f"https://www.twitch.tv/videos/{video_id}"
     duration_sec = int(max(c["timestamp"] for c in comments)) if comments else 0

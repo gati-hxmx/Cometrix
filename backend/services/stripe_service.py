@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-print("[DEBUG] Stripe API key is set to:", stripe.api_key)
+print("[DEBUG] Stripe API key is set:", bool(stripe.api_key))
 
 # ✅ Checkout セッションを作成
 def create_checkout_session(email):
