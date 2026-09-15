@@ -67,7 +67,7 @@
 
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import {
   Filter, ChevronDown, ChevronUp, X, User, UserX, Search
@@ -79,6 +79,14 @@ const excludeWordsInput = ref('')
 const includeUsersInput = ref('')
 const excludeUsersInput = ref('')
 const showAdvanced = ref(false)
+
+// 新しい分析結果が読み込まれたら、入力欄の表示も一緒にクリアする
+watch(() => chat.videoId, () => {
+  includeWordsInput.value = ''
+  excludeWordsInput.value = ''
+  includeUsersInput.value = ''
+  excludeUsersInput.value = ''
+})
 
 function applyFilters() {
   chat.setFilters({

@@ -90,6 +90,13 @@ filteredVolumePer30s(state) {
       this.videoId = videoId
       this.loading = true
       this.error = null
+      // 前回の分析結果に対するフィルタ条件を新しい分析結果に持ち越さない
+      this.filters = {
+        includeWords: [],
+        excludeWords: [],
+        includeUsers: [],
+        excludeUsers: [],
+      }
 
       try {
         let url, res, data
