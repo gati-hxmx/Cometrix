@@ -1,6 +1,6 @@
 import os
 from sqlalchemy.orm import Session
-from models import User, Subscription, AnalysisLog
+from models import User, Subscription, AnalysisLog, BillingHistory
 from services.stripe_service import cancel_subscription_by_customer_id
 
 
@@ -25,6 +25,7 @@ def delete_user_account(db: Session, user_id: int):
     # ✅ 自前DBから関連データを削除
     db.query(Subscription).filter_by(user_id=user.id).delete()
     db.query(AnalysisLog).filter_by(user_id=user.id).delete()
+    db.query(BillingHistory).filter_by(user_id=user.id).delete()
     db.delete(user)
     db.commit()
     print(f"✅ ユーザーと関連データを削除しました: {user.email}")
