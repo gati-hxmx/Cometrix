@@ -15,7 +15,7 @@
       <!-- Googleログインボタン -->
       <div class="mb-4">
         <a
-          href="http://localhost:5000/login/google"
+          :href="`${AUTH_API_BASE}/login/google`"
           class="inline-flex items-center justify-center bg-white border px-4 py-2 rounded shadow hover:shadow-md transition"
         >
           <img
@@ -32,3 +32,7 @@
     </div>
   </div>
 </template>
+
+<script setup>
+import { AUTH_API_BASE } from '@/config/api'
+</script>

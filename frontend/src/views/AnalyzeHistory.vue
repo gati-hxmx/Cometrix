@@ -89,6 +89,7 @@
 import { onMounted, ref } from "vue";
 import { useUserStore } from "@/stores/user";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import { ANALYZE_API_BASE } from "@/config/api";
 
 const logs = ref([]);
 const userStore = useUserStore();
@@ -97,7 +98,7 @@ onMounted(async () => {
   if (!userStore.email) return;
   try {
     const res = await fetch(
-      `http://localhost:8000/api/analysis/history?email=${userStore.email}`
+      `${ANALYZE_API_BASE}/api/analysis/history?email=${userStore.email}`
     );
     if (res.ok) {
       const json = await res.json();

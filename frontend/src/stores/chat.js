@@ -1,6 +1,7 @@
 // stores/chat.js
 import { defineStore } from 'pinia'
 import { useUserStore } from '@/stores/user'  // 👈 追加：ユーザー情報を取得
+import { ANALYZE_API_BASE } from '@/config/api'
 
 export const useChatStore = defineStore('chat', {
   state: () => ({
@@ -99,7 +100,7 @@ filteredVolumePer30s(state) {
 
         // --- ✅ Twitch は従来どおり同期取得 ---
       if (platform === 'twitch') {
-        const jobRes = await fetch(`http://localhost:8000/api/analyze/twitch/async`, {
+        const jobRes = await fetch(`${ANALYZE_API_BASE}/api/analyze/twitch/async`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ videoId, email }),
@@ -110,7 +111,7 @@ filteredVolumePer30s(state) {
         let attempts = 0
         let result = null
         while (attempts < 60) {
-          const statusRes = await fetch(`http://localhost:8000/api/analyze/task-status/${task_id}`)
+          const statusRes = await fetch(`${ANALYZE_API_BASE}/api/analyze/task-status/${task_id}`)
           const statusJson = await statusRes.json()
 
           if (statusJson.status === 'SUCCESS' && statusJson.result) {
@@ -135,7 +136,7 @@ filteredVolumePer30s(state) {
 
         // --- ✅ YouTube は非同期ジョブとして投げる ---
         // chat.js で fetch のURLを明示的にFastAPIサーバに向ける
-        const jobRes = await fetch(`http://localhost:8000/api/analyze/youtube/async`, {
+        const jobRes = await fetch(`${ANALYZE_API_BASE}/api/analyze/youtube/async`, {
 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -148,7 +149,7 @@ filteredVolumePer30s(state) {
         let attempts = 0
         let result = null
         while (attempts < 60) {
-          const statusRes = await fetch(`http://localhost:8000/api/analyze/task-status/${task_id}`)
+          const statusRes = await fetch(`${ANALYZE_API_BASE}/api/analyze/task-status/${task_id}`)
           const statusJson = await statusRes.json()
 
           if (statusJson.status === 'SUCCESS' && statusJson.result) {

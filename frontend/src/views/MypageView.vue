@@ -115,6 +115,7 @@
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import { useUserStore } from "@/stores/user";
 import { computed, watchEffect } from "vue";
+import { STRIPE_API_BASE } from "@/config/api";
 
 const userStore = useUserStore();
 const name = computed(() => userStore.name);
@@ -162,7 +163,7 @@ function statusLabel(status) {
 
 async function handleUpgrade() {
   try {
-    const res = await fetch("http://localhost:5001/create-checkout-session", {
+    const res = await fetch(`${STRIPE_API_BASE}/create-checkout-session`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -180,7 +181,7 @@ async function handleUpgrade() {
 async function handleCancel() {
   if (!confirm("本当に解約しますか？")) return;
   try {
-    const res = await fetch("http://localhost:5001/cancel-subscription", {
+    const res = await fetch(`${STRIPE_API_BASE}/cancel-subscription`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -198,7 +199,7 @@ async function handleCancel() {
 async function handleUncancel() {
   if (!confirm("解約をキャンセルしますか？")) return;
   try {
-    const res = await fetch("http://localhost:5001/uncancel-subscription", {
+    const res = await fetch(`${STRIPE_API_BASE}/uncancel-subscription`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

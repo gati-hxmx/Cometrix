@@ -44,11 +44,12 @@
 <script setup>
 import { ref } from "vue";
 import TermsOfServiceContent from "@/components/common/TermsOfServiceContent.vue";
+import { AUTH_API_BASE } from "@/config/api";
 
 const agreed = ref(false);
 
 const handleAgree = () => {
   // Google OAuth にリダイレクト（Flask側で登録処理も兼ねる）
-  window.location.href = "http://localhost:5000/login/google?new_user=1";
+  window.location.href = `${AUTH_API_BASE}/login/google?new_user=1`;
 };
 </script>

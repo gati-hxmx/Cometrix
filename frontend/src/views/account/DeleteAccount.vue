@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
+import { ANALYZE_API_BASE } from '@/config/api'
 
 
 const router = useRouter()
@@ -12,7 +13,7 @@ async function handleDelete() {
   if (!confirmed) return
 
   try {
-    const res = await fetch("http://localhost:8000/api/delete-account", {
+    const res = await fetch(`${ANALYZE_API_BASE}/api/delete-account`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
