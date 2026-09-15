@@ -17,6 +17,15 @@ services:
     networks:
       - backend-net
 
+  redis:
+    image: redis:7
+    container_name: cometrix-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - backend-net
+
 volumes:
   postgres_data:
 
