@@ -85,8 +85,10 @@ def stripe_webhook():
             sub.updated_at = datetime.utcnow()
             db.commit()
             print(f"✅ Trial subscription set for {email}")
+            return jsonify({"status": "ok"})
         else:
             print(f"⚠️ No user found for email: {email}")
+            return jsonify({"status": "ignored"}), 200
 
     elif event["type"] == "invoice.payment_succeeded":
         invoice = event["data"]["object"]
